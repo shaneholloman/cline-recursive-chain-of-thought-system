@@ -64,8 +64,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/RPG-fan/ReCoTs"
-"Bug Tracker" = "https://github.com/RPG-fan/ReCoTs/issues"
+"Homepage" = "https://github.com/shaneholloman/ReCoTs"
+"Bug Tracker" = "https://github.com/shaneholloman/ReCoTs/issues"
 
 [project.scripts]
 ReCoTs-analyze = "cline_utils.dependency_system.dependency_processor:main"

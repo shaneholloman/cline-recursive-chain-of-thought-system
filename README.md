@@ -75,14 +75,14 @@ Introduced the `visualize-dependencies` command (experimental) for generating Me
 1. **Clone the Repo**:
 
     ```sh
-    git clone https://github.com/RPG-fan/ReCoTs.git
+    git clone https://github.com/shaneholloman/ReCoTs.git
     cd ReCoTs
     ```
 
 2. **Install Dependencies**:
 
     ```sh
-    pip install -r requirements.txt
+    uv sync
     ```
 
 3. **Set Up Cline Extension**:
