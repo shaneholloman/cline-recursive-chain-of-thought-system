@@ -1,14 +1,14 @@
 # ReCoTs
 
-Recursive Chain-of-Thought System (ReCoTs)
+> Recursive Chain-of-Thought System (ReCoTs)
 
-Welcome to the **Recursive Chain-of-Thought System (ReCoTs)**, a framework designed to manage context, dependencies, and tasks in large-scale Cline projects within VS Code. Built for the Cline extension, ReCoTs leverages a recursive, file-based approach with a modular dependency tracking system to maintain project state and efficiency as complexity increases.
+**Recursive Chain-of-Thought System (ReCoTs)** is a framework designed to manage context, dependencies, and tasks in large-scale Cline projects within VS Code. Built for the Cline extension, ReCoTs leverages a recursive, file-based approach with a modular dependency tracking system to maintain project state and efficiency as complexity increases.
 
 Version **v7.5** represents a significant restructuring of the ReCoTs system, bringing it into alignment with its original design goals.  With the core architecture now established, future v7.x releases will focus on performance optimizations, enhancements, and refining the existing codebase.
 
 - Version **v7.7** significantly restructures the core prompt and plugins, as well as introduces a new phase and plugin prompt, cleanup_consolidation_plugin.md.
-   - cleanup_consolidation is responsible for consolidating project information into the appropriate files and either archiving or deleting old tasks.
-   **WARNING** This new phase leverages shell commands for renaming, moving, and deleting files. **DO NOT** let the system go unattended during this phase if you value your project content. The system *should* ask the user for confirmation on which commands to use for the specific environment it is using, however certain instructions in the Cline and Roo system prompts may interfere with this behavior, so use caution until this new feature has proven to be stable.
+    - cleanup_consolidation is responsible for consolidating project information into the appropriate files and either archiving or deleting old tasks.
+            - **WARNING** This new phase leverages shell commands for renaming, moving, and deleting files. **DO NOT** let the system go unattended during this phase if you value your project content. The system *should* ask the user for confirmation on which commands to use for the specific environment it is using, however certain instructions in the Cline and Roo system prompts may interfere with this behavior, so use caution until this new feature has proven to be stable.
 - New templates were added to enhance the strategy and execution phases: hdta_review_progress and hierarchical_task_checklist.
 - Added more utility information to the [LEARNING_JOURNAL] in `.clinerules` file.
 
@@ -24,8 +24,8 @@ It also incorporates:
 - **File Exclusion Patterns**: Users can now customize project analysis by defining file exclusion patterns in `.clinerules.config.json`.
 - **Improved Caching and Batch Processing**: Enhanced system performance and efficiency through improved caching and batch processing mechanisms.
 - Cache + batch processing enable *significant* time savings.
-   - Test project **without** cache and batch processing took ~`11` minutes.
-   - Test project **with** cache and batch processing took ~`30` seconds.
+    - Test project **without** cache and batch processing took ~`11` minutes.
+    - Test project **with** cache and batch processing took ~`30` seconds.
 
 ---
 
@@ -41,7 +41,7 @@ It also incorporates:
     - `show-keys` identifies keys needing attention ('p', 's', 'S') within a specific tracker.
     - `show-dependencies` aggregates dependency details (inbound/outbound, paths) from *all* trackers for a specific key, eliminating manual tracker deciphering.
     - `add-dependency` resolves placeholder ('p') or suggested ('s', 'S') relationships identified via this process. **Crucially, when targeting a mini-tracker (`*_module.md`), `add-dependency` now allows specifying a `--target-key` that doesn't exist locally, provided the target key is valid globally (known from `analyze-project`). The system automatically adds the foreign key definition and updates the grid, enabling manual linking to external dependencies.**
-      - **Tip:** This is especially useful for manually linking relevant documentation files (e.g., requirements, design specs, API descriptions) to code files within a mini-tracker, even if the code file is incomplete or doesn't trigger an automatic suggestion. This provides the LLM with crucial context during code generation or modification tasks, guiding it towards the intended functionality described in the documentation (`doc_key < code_key`).
+        - **Tip:** This is especially useful for manually linking relevant documentation files (e.g., requirements, design specs, API descriptions) to code files within a mini-tracker, even if the code file is incomplete or doesn't trigger an automatic suggestion. This provides the LLM with crucial context during code generation or modification tasks, guiding it towards the intended functionality described in the documentation (`doc_key < code_key`).
 - **Configurable Embedding Device**: Allows users to configure the embedding device (`cpu`, `cuda`, `mps`) via `.clinerules.config.json` for optimized performance on different hardware. (Note: *the system does not yet install the requirements for cuda or mps automatically, please install the requirements manually or with the help of the LLM.*)
 - **File Exclusion Patterns**: Users can now define file exclusion patterns in `.clinerules.config.json` to customize project analysis.
 - **New Cache System**: Implemented a new caching mechanism for improved performance, including improved invalidation logic.
@@ -65,7 +65,8 @@ Introduced the `visualize-dependencies` command (experimental) for generating Me
 - Hierarchical sorting.
 - Saves to default output files in project root.
 
-*Note: `visualize-dependencies` is experimental and may undergo significant changes.*
+> [!NOTE]
+> `visualize-dependencies` is experimental and may undergo significant changes.*
 
 ---
 
@@ -73,24 +74,24 @@ Introduced the `visualize-dependencies` command (experimental) for generating Me
 
 1. **Clone the Repo**:
 
-   ```sh
-   git clone https://github.com/RPG-fan/ReCoTs.git
-   cd ReCoTs
-   ```
+    ```sh
+    git clone https://github.com/RPG-fan/ReCoTs.git
+    cd ReCoTs
+    ```
 
 2. **Install Dependencies**:
 
-   ```sh
-   pip install -r requirements.txt
-   ```
+    ```sh
+    pip install -r requirements.txt
+    ```
 
 3. **Set Up Cline Extension**:
-   - Open the project in VS Code with the Cline extension installed.
-   - Copy `cline_docs/prompts/core_prompt(put this in Custom Instructions).md` into the Cline Custom Instructions field.
+    - Open the project in VS Code with the Cline extension installed.
+    - Copy `cline_docs/prompts/core_prompt(put this in Custom Instructions).md` into the Cline Custom Instructions field.
 
 4. **Start the System**:
-   - Type `Start.` in the Cline input to initialize the system.
-   - The LLM will bootstrap from `.clinerules`, creating missing files and guiding you through setup if needed.
+    - Type `Start.` in the Cline input to initialize the system.
+    - The LLM will bootstrap from `.clinerules`, creating missing files and guiding you through setup if needed.
 
 *Note*: The Cline extension’s LLM automates most commands and updates to `cline_docs/`. Minimal user intervention is required (in theory!).
 
@@ -98,7 +99,7 @@ Introduced the `visualize-dependencies` command (experimental) for generating Me
 
 ## Project Structure
 
-```tree
+```sh
 ReCoTs/
 │   .clinerules
 │   .gitignore
@@ -156,7 +157,7 @@ To test on an existing project:
 
 1. Copy your project into `src/`.
 2. Use these prompts to kickstart the LLM:
-   - `Perform initial setup and populate dependency trackers.`
-   - `Review the current state and suggest next steps.`
+    - `Perform initial setup and populate dependency trackers.`
+    - `Review the current state and suggest next steps.`
 
 > The system will analyze your codebase, initialize trackers, and guide you forward.
