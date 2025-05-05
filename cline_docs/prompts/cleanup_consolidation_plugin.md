@@ -23,20 +23,22 @@
 
     ````markdown
     [LAST_ACTION_STATE]
-    last_action: "Completed Cleanup/Consolidation Phase"
-    current_phase: "Cleanup/Consolidation"
-    next_action: "Phase Complete - User Action Required"
-    next_phase: "Set-up/Maintenance" # Or "Strategy" if planning next cycle immediately
+
+    - last_action: "Completed Cleanup/Consolidation Phase"
+    - current_phase: "Cleanup/Consolidation"
+    - next_action: "Phase Complete - User Action Required"
+    - next_phase: "Set-up/Maintenance" # Or "Strategy" if planning next cycle immediately
     ````
 
     - *Alternative: If the project is now considered fully complete:*
 
     ````markdown
     [LAST_ACTION_STATE]
-    last_action: "Completed Cleanup/Consolidation Phase - Project Finalized"
-    current_phase: "Cleanup/Consolidation"
-    next_action: "Project Completion - User Review"
-    next_phase: "Project Complete"
+
+    - last_action: "Completed Cleanup/Consolidation Phase - Project Finalized"
+    - current_phase: "Cleanup/Consolidation"
+    - next_action: "Project Completion - User Review"
+    - next_phase: "Project Complete"
     ````
 
 3. **User Action**: After updating `.clinerules`, pause for user to trigger the next phase.
@@ -191,7 +193,7 @@
 
 5. **MUP**: Perform Core MUP and Section V additions after completing cleanup. Update `last_action` and `next_phase` in `.clinerules` to signify the end of this phase.
 
-**Cleanup Flowchart**
+**Cleanup Flowchart:**
 
 ```mermaid
 flowchart TD
@@ -235,23 +237,25 @@ After Core MUP steps:
 3. **Update `.clinerules` [LAST_ACTION_STATE]**:
     - After Consolidation step (including changelog):
 
-      ```
-      [LAST_ACTION_STATE]
-      last_action: "Completed Consolidation Step (incl. Changelog Reorg)"
-      current_phase: "Cleanup/Consolidation"
-      next_action: "Perform Cleanup Step"
-      next_phase: "Cleanup/Consolidation"
-      ```
+    ````markdown
+    [LAST_ACTION_STATE]
+
+    - last_action: "Completed Consolidation Step (incl. Changelog Reorg)"
+    - current_phase: "Cleanup/Consolidation"
+    - next_action: "Perform Cleanup Step"
+    - next_phase: "Cleanup/Consolidation"
+    ```
 
     - After Cleanup step (exiting phase):
 
-      ```
-      [LAST_ACTION_STATE]
-      last_action: "Completed Cleanup/Consolidation Phase"
-      current_phase: "Cleanup/Consolidation"
-      next_action: "Phase Complete - User Action Required"
-      next_phase: "Set-up/Maintenance" # Or Strategy / Project Complete
-      ```
+    ```markdown
+    [LAST_ACTION_STATE]
+
+    - last_action: "Completed Cleanup/Consolidation Phase"
+    - current_phase: "Cleanup/Consolidation"
+    - next_action: "Phase Complete - User Action Required"
+    - next_phase: "Set-up/Maintenance" # Or Strategy / Project Complete
+    ```
 
 ---
 

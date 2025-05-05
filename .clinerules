@@ -6,11 +6,14 @@ n + 1 = (x)
 > [!NOTE]
 > This is a system-wide progressive counter where x = number of current response. This must be displayed at the top of every response.(e.g. 1, 2, ...)
 
+````markdown
 [LAST_ACTION_STATE]
-last_action: "System Initialized"
-current_phase: "Set-up/Maintenance"
-next_action: "Initialize Core Files"
-next_phase: "Set-up/Maintenance"
+
+- last_action: "System Initialized"
+- current_phase: "Set-up/Maintenance"
+- next_action: "Initialize Core Files"
+- next_phase: "Set-up/Maintenance"
+````
 
 ---
 

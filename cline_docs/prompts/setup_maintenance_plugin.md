@@ -299,35 +299,35 @@ After performing the Core MUP steps (Core Prompt Section VI):
     * After identifying roots:
 
         ````markdown
-        last_action: "Identified Code and Doc Roots"
-        current_phase: "Set-up/Maintenance"
-        next_action: "Initialize Core Files / Run analyze-project"
-        next_phase: "Set-up/Maintenance"
+        - last_action: "Identified Code and Doc Roots"
+        - current_phase: "Set-up/Maintenance"
+        - next_action: "Initialize Core Files / Run analyze-project"
+        - next_phase: "Set-up/Maintenance"
         ````
 
     * After initial `analyze-project`:
 
         ````markdown
-        last_action: "Ran analyze-project, Initialized Trackers"
-        current_phase: "Set-up/Maintenance"
-        next_action: "Verify doc_tracker.md Dependencies"
-        next_phase: "Set-up/Maintenance"
+        - last_action: "Ran analyze-project, Initialized Trackers"
+        - current_phase: "Set-up/Maintenance"
+        - next_action: "Verify doc_tracker.md Dependencies"
+        - next_phase: "Set-up/Maintenance"
         ````
 
     * After verifying `doc_tracker.md`:
 
         ````markdown
-        last_action: "Verified doc_tracker.md"
-        current_phase: "Set-up/Maintenance"
-        next_action: "Verify Mini-Trackers"
-        next_phase: "Set-up/Maintenance"
+        - last_action: "Verified doc_tracker.md"
+        - current_phase: "Set-up/Maintenance"
+        - next_action: "Verify Mini-Trackers"
+        - next_phase: "Set-up/Maintenance"
         ````
 
     * After verifying the last tracker:
 
         ````markdown
-        last_action: "Completed All Tracker Verification"
-        current_phase: "Set-up/Maintenance"
-        next_action: "Phase Complete - User Action Required"
-        next_phase: "Strategy"
+        - last_action: "Completed All Tracker Verification"
+        - current_phase: "Set-up/Maintenance"
+        - next_action: "Phase Complete - User Action Required"
+        - next_phase: "Strategy"
         ````

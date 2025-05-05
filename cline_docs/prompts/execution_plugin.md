@@ -24,30 +24,33 @@
 
     ````markdown
     [LAST_ACTION_STATE]
-    last_action: "Completed Execution Phase - Tasks Executed"
-    current_phase: "Execution"
-    next_action: "Phase Complete - User Action Required"
-    next_phase: "Cleanup/Consolidation"
+
+    - last_action: "Completed Execution Phase - Tasks Executed"
+    - current_phase: "Execution"
+    - next_action: "Phase Complete - User Action Required"
+    - next_phase: "Cleanup/Consolidation"
     ````
 
     - *Alternative: If transitioning back to Set-up/Maintenance for re-verification (less common after standard execution)*:
 
     ````markdown
     [LAST_ACTION_STATE]
-    last_action: "Completed Execution Phase - Tasks Executed, Needs Verification"
-    current_phase: "Execution"
-    next_action: "Phase Complete - User Action Required"
-    next_phase: "Set-up/Maintenance"
+
+    - last_action: "Completed Execution Phase - Tasks Executed, Needs Verification"
+    - current_phase: "Execution"
+    - next_action: "Phase Complete - User Action Required"
+    - next_phase: "Set-up/Maintenance"
     ```
 
     - For project completion:
 
     ````markdown
     [LAST_ACTION_STATE]
-    last_action: "Completed Execution Phase - Project Objectives Achieved"
-    current_phase: "Execution"
-    next_action: "Project Completion - User Review"
-    next_phase: "Project Complete"
+
+    - last_action: "Completed Execution Phase - Project Objectives Achieved"
+    - current_phase: "Execution"
+    - next_action: "Project Completion - User Review"
+    - next_phase: "Project Complete"
     ````
 
     *Note: "Project Complete" pauses the system; define further actions if needed.*
@@ -202,20 +205,21 @@ After Core MUP steps (Section VI of Core Prompt), performed *after each step* of
 
         ````markdown
         [LAST_ACTION_STATE]
-        last_action: "Completed Step {N} in Execution_{task_name}.md"
-        current_phase: "Execution"
-        next_action: "Execute Step {N+1} in Execution_{task_name}.md"
-        next_phase: "Execution"
+
+        - last_action: "Completed Step {N} in Execution_{task_name}.md"
+        - current_phase: "Execution"
+        - next_action: "Execute Step {N+1} in Execution_{task_name}.md"
+        - next_phase: "Execution"
         ````
 
     - After completing the last step in a task:
 
-        ```markdown
+        ````markdown
         [LAST_ACTION_STATE]
-        last_action: "Completed all steps in Execution_{task_name}.md"
-        current_phase: "Execution"
-        next_action: "Select next Execution task or transition phase"
-        next_phase: "Execution" # Default, change only when *all* planned tasks are done.
+        - last_action: "Completed all steps in Execution_{task_name}.md"
+        - current_phase: "Execution"
+        - next_action: "Select next Execution task or transition phase"
+        - next_phase: "Execution" # Default, change only when *all* planned tasks are done.
         ````
 
     - Upon exiting the phase (as defined in Section I): Use the appropriate state from Section I.
