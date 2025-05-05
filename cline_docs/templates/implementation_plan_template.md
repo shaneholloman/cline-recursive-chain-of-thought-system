@@ -18,9 +18,9 @@ This document focuses on a specific implementation within a Module.
 ## Algorithms
 
 - `{Algorithm1}`: {description}
-  - Complexity: {complexity analysis}
+    - Complexity: {complexity analysis}
 - `{Algorithm2}`: {description}
-  - Complexity: {complexity analysis}
+    - Complexity: {complexity analysis}
 ...
 
 ## Data Flow

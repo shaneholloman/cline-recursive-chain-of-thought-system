@@ -10,6 +10,7 @@
 - **Do NOT include:** Detailed task breakdowns, historical changes, long-term plans (these belong in other memory bank files like `progress.md` or dedicated documentation).
 - **Maintain Brevity:** Keep this file concise and focused on the *current* state of the project. Regularly review and prune outdated information.
 
+````markdown
 ## Current Work Focus
 
 -
@@ -26,3 +27,5 @@
 -
 -
 -
+
+````

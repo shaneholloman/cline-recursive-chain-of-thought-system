@@ -1,4 +1,4 @@
-# Cache System Documentation (v7.5)
+# Cache System Documentation
 
 ## Overview
 
@@ -158,3 +158,4 @@ from cline_utils.dependency_system.utils.cache_manager import get_cache_stats
 
 stats = get_cache_stats("my_function_cache") # Use the actual cache_name
 print(f"Cache 'my_function_cache' Stats - Hits: {stats['hits']}, Misses: {stats['misses']}, Current Size: {stats['size']}")
+```

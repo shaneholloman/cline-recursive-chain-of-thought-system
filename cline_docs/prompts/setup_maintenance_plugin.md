@@ -22,12 +22,12 @@
     * Mini-trackers are created/populated as needed via `analyze-project`.
 2. **`.clinerules` Update (MUP):** Once all criteria are met, update `[LAST_ACTION_STATE]` as follows:
 
-    ```
+    ```markdown
     last_action: "Completed Set-up/Maintenance Phase"
     current_phase: "Set-up/Maintenance"
     next_action: "Phase Complete - User Action Required"
     next_phase: "Strategy"
-    ```
+    ````
 
 3. **User Action**: After updating `.clinerules`, pause for user to trigger the next session/phase. Refer to Core System Prompt, Section III for the phase transition checklist.
 
@@ -43,22 +43,28 @@
     * **Manual Creation Files** (`.clinerules`, `activeContext.md`, `changelog.md`, `userProfile.md`, `progress.md`): If missing, use `write_to_file` to create them with minimal placeholder content as described in Core Prompt Section II table. State: "File `{file_path}` missing. Creating with placeholder content."
         * Example Initial `.clinerules` (if creating):
 
-            ```
+            ```markdown
             [LAST_ACTION_STATE]
+
             last_action: "System Initialized"
             current_phase: "Set-up/Maintenance"
             next_action: "Initialize Core Files" # Or Identify Code/Doc Roots if needed first
             next_phase: "Set-up/Maintenance"
 
             [CODE_ROOT_DIRECTORIES]
-            # To be identified
+
+            > To be identified
 
             [DOC_DIRECTORIES]
-            # To be identified
+
+            > To be identified
 
             [LEARNING_JOURNAL]
             -
-            ```
+            -
+            -
+
+            ````
 
     * **Template-Based File** (`system_manifest.md`): If missing, first use `write_to_file` to create an empty file named `system_manifest.md` in `{memory_dir}/`. State: "File `system_manifest.md` missing. Creating empty file." Then, read the template content from `cline_docs/templates/system_manifest_template.md` and use `write_to_file` again to *overwrite* the empty `system_manifest.md` with the template content. State: "Populating `system_manifest.md` with template content."
     * **Tracker Files** (`module_relationship_tracker.md`, `doc_tracker.md`, and mini-trackers `*_module.md`):
@@ -134,15 +140,15 @@ This order is crucial because Mini-Trackers capture detailed cross-directory dep
             * **State Reasoning (MANDATORY)**: Before using `add-dependency`, **clearly state your reasoning** for the chosen dependency character (`<`, `>`, `x`, `d`, or `n`) for *each specific relationship* you intend to set, based on your direct file analysis and the functional reliance criteria.
         * **Correct/Confirm Dependencies**: Use `add-dependency`, specifying `--tracker <path_to_doc_tracker.md>`. The `--source-key` is always the `key_string` you are iterating on. The `--target-key` is the column key whose relationship you determined. Set the `--dep-type` based on your reasoned analysis. Batch multiple targets *for the same source key* if they share the *same new dependency type*.
 
-              ```sh
-              # Example: Set '>' from 1A2 (source) to 2B1 (target) in doc_tracker.md
-              # Reasoning: docs/setup.md (1A2) details steps required BEFORE using API described in docs/api/users.md (2B1). Thus, 2B1 depends on 1A2.
-              python -m cline_utils.dependency_system.dependency_processor add-dependency --tracker <path_to_doc_tracker.md> --source-key 1A2 --target-key 2B1 --dep-type ">"
+            ```sh
+            # Example: Set '>' from 1A2 (source) to 2B1 (target) in doc_tracker.md
+            # Reasoning: docs/setup.md (1A2) details steps required BEFORE using API described in docs/api/users.md (2B1). Thus, 2B1 depends on 1A2.
+            python -m cline_utils.dependency_system.dependency_processor add-dependency --tracker <path_to_doc_tracker.md> --source-key 1A2 --target-key 2B1 --dep-type ">"
 
-              # Example: Set 'n' from 1A2 (source) to 3C1 and 3C2 (targets) in doc_tracker.md
-              # Reasoning: Files 3C1 and 3C2 are unrelated examples; no functional dependency on setup guide 1A2.
-              python -m cline_utils.dependency_system.dependency_processor add-dependency --tracker <path_to_doc_tracker.md> --source-key 1A2 --target-key 3C1 3C2 --dep-type "n"
-              ```
+            # Example: Set 'n' from 1A2 (source) to 3C1 and 3C2 (targets) in doc_tracker.md
+            # Reasoning: Files 3C1 and 3C2 are unrelated examples; no functional dependency on setup guide 1A2.
+            python -m cline_utils.dependency_system.dependency_processor add-dependency --tracker <path_to_doc_tracker.md> --source-key 1A2 --target-key 3C1 3C2 --dep-type "n"
+            ```
 
         * Repeat Step 2.B for all keys identified in Step 2.A.
     * **C. Final Check**: Run `show-keys --tracker <path_to_doc_tracker.md>` again to confirm no `(checks needed: ...)` remain.
@@ -163,11 +169,11 @@ This order is crucial because Mini-Trackers capture detailed cross-directory dep
             * **Verify Keys**: Iterate through keys needing checks. Use `show-dependencies --key <key_string>` (searches globally for context). Examine source/target files (`read_file`). State reasoning based on functional/conceptual reliance. Use `add-dependency --tracker <mini_tracker_path> --source-key <key_string> --target-key <target_key> --dep-type <char>`.
             * **Foreign Keys**: Remember, when using `add-dependency` on a mini-tracker, the `--target-key` can be an external (foreign) key if it exists globally (Core Prompt Section VIII). Use this to link internal code to external docs or code in other modules if identified during analysis. State reasoning clearly.
 
-              ```sh
-              # Example: Set 'd' from internal code file 1Ba2 to external doc 1Aa6 in agents_module.md
-              # Reasoning: combat_agent.py (1Ba2) implements concepts defined in Multi-Agent_Collaboration.md (1Aa6), making doc essential.
-              python -m cline_utils.dependency_system.dependency_processor add-dependency --tracker src/agents/agents_module.md --source-key 1Ba2 --target-key 1Aa6 --dep-type "d"
-              ```
+            ```txt
+            # Example: Set 'd' from internal code file 1Ba2 to external doc 1Aa6 in agents_module.md
+            # Reasoning: combat_agent.py (1Ba2) implements concepts defined in Multi-Agent_Collaboration.md (1Aa6), making doc essential.
+            python -m cline_utils.dependency_system.dependency_processor add-dependency --tracker src/agents/agents_module.md --source-key 1Ba2 --target-key 1Aa6 --dep-type "d"
+            ```
 
             * **Proactive External Links**: While analyzing file content, actively look for explicit references or clear conceptual reliance on *external* files (docs or other modules) missed by automation. Add these using `add-dependency` with the foreign key capability if a true dependency exists. State reasoning.
         * **C. Final Check (Mini-Tracker)**: Run `show-keys --tracker <mini_tracker_path>` again to confirm no `(checks needed: ...)` remain for *this* mini-tracker.
@@ -292,38 +298,36 @@ After performing the Core MUP steps (Core Prompt Section VI):
 2. **Update `.clinerules` [LAST_ACTION_STATE]:** Update `last_action`, `current_phase`, `next_action`, `next_phase` to reflect the specific step completed within this phase. Examples:
     * After identifying roots:
 
-        ```
+        ````markdown
         last_action: "Identified Code and Doc Roots"
         current_phase: "Set-up/Maintenance"
         next_action: "Initialize Core Files / Run analyze-project"
         next_phase: "Set-up/Maintenance"
-        ```
+        ````
 
     * After initial `analyze-project`:
 
-        ```
+        ````markdown
         last_action: "Ran analyze-project, Initialized Trackers"
         current_phase: "Set-up/Maintenance"
         next_action: "Verify doc_tracker.md Dependencies"
         next_phase: "Set-up/Maintenance"
-        ```
+        ````
 
     * After verifying `doc_tracker.md`:
 
-        ```
+        ````markdown
         last_action: "Verified doc_tracker.md"
         current_phase: "Set-up/Maintenance"
         next_action: "Verify Mini-Trackers"
         next_phase: "Set-up/Maintenance"
-        ```
+        ````
 
     * After verifying the last tracker:
 
-        ```
+        ````markdown
         last_action: "Completed All Tracker Verification"
         current_phase: "Set-up/Maintenance"
         next_action: "Phase Complete - User Action Required"
         next_phase: "Strategy"
-        ```
-
-```
+        ````

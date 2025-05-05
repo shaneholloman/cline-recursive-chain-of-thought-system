@@ -53,7 +53,7 @@ These instructions provide a guide to setting up and using the Recursive Chain-o
 
 2. **Follow Prompts**:
 
-    - The LLM may ask for input (e.g., project goals for `projectbrief.md`).
+    - The LLM may ask for input (e.g., project goals for `projectBrief.md`).
     - Provide concise answers to help it populate files.
 
 3. **Verify Setup**:

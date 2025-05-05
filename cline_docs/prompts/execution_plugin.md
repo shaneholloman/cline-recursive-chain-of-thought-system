@@ -20,37 +20,38 @@
    - Results and observations are documented.
    - MUP is followed for all actions.
 2. **`.clinerules` Update (MUP):**
-   - To proceed to cleanup and consolidation:
+    - To proceed to cleanup and consolidation:
 
-     ```
-     [LAST_ACTION_STATE]
-     last_action: "Completed Execution Phase - Tasks Executed"
-     current_phase: "Execution"
-     next_action: "Phase Complete - User Action Required"
-     next_phase: "Cleanup/Consolidation"
-     ```
+    ````markdown
+    [LAST_ACTION_STATE]
+    last_action: "Completed Execution Phase - Tasks Executed"
+    current_phase: "Execution"
+    next_action: "Phase Complete - User Action Required"
+    next_phase: "Cleanup/Consolidation"
+    ````
 
-   - *Alternative: If transitioning back to Set-up/Maintenance for re-verification (less common after standard execution)*:
+    - *Alternative: If transitioning back to Set-up/Maintenance for re-verification (less common after standard execution)*:
 
-     ```
-     [LAST_ACTION_STATE]
-     last_action: "Completed Execution Phase - Tasks Executed, Needs Verification"
-     current_phase: "Execution"
-     next_action: "Phase Complete - User Action Required"
-     next_phase: "Set-up/Maintenance"
-     ```
+    ````markdown
+    [LAST_ACTION_STATE]
+    last_action: "Completed Execution Phase - Tasks Executed, Needs Verification"
+    current_phase: "Execution"
+    next_action: "Phase Complete - User Action Required"
+    next_phase: "Set-up/Maintenance"
+    ```
 
-   - For project completion:
+    - For project completion:
 
-     ```
-     [LAST_ACTION_STATE]
-     last_action: "Completed Execution Phase - Project Objectives Achieved"
-     current_phase: "Execution"
-     next_action: "Project Completion - User Review"
-     next_phase: "Project Complete"
-     ```
+    ````markdown
+    [LAST_ACTION_STATE]
+    last_action: "Completed Execution Phase - Project Objectives Achieved"
+    current_phase: "Execution"
+    next_action: "Project Completion - User Review"
+    next_phase: "Project Complete"
+    ````
 
-   *Note: "Project Complete" pauses the system; define further actions if needed.*
+    *Note: "Project Complete" pauses the system; define further actions if needed.*
+
 3. **User Action**: After updating `.clinerules`, pause for user to trigger the next phase. See Core System Prompt, Section III for a phase transition checklist.
 
 ---
@@ -92,14 +93,15 @@
             5. **Validation**: Compare expected and actual state. Proceed **only if** they match reasonably AND the intended change is consistent with the dependency context summary. If validation fails, **STOP**, state the discrepancy, and re-evaluate the step, plan, or dependencies. Ask for clarification if needed.
         - Example:
 
-            ```
+            ````markdown
             Pre-Action Verification:
+
             1. Intended Change: Replace line 55 in `game_logic.py` (Key: 2Ca1) with `new_score = calculate_score(data, multipliers)`.
             2. Dependency Context Summary: `calculate_score` is imported from `scoring_utils.py` (Key: 2Cb3, dependency confirmed via show-dependencies & read_file). It expects `data` (dict) and `multipliers` (list). `game_logic.py` has access to these variables in scope.
             3. Expected Current State: Line 55 contains the old calculation `new_score = data['base'] * 1.1`.
             4. Actual Current State: Line 55 is `new_score = data['base'] * 1.1`.
             5. Validation: Match confirmed. Change is consistent with dependency context. Proceeding with `replace_in_file`.
-            ```
+            ````
 
     - **D. Perform Action**: Execute the action described in the step using the appropriate tool (`write_to_file`, `execute_command`, `replace_in_file`, etc.).
     - **E. Document Results (Mini-CoT)**: Immediately after the action, record the outcome:
@@ -121,31 +123,31 @@
     *(Reminder: Before generating/modifying code, ensure Step III.1.B 'Review Dependencies & Context' including reading dependent files was performed)*
     When performing actions that involve writing or changing code, adhere strictly to the following:
     1. **Context-Driven**:
-     - Code **must** align with the interactions, interfaces, data formats, and requirements identified during dependency review (III.1.B) and pre-action verification (III.1.C).
+        - Code **must** align with the interactions, interfaces, data formats, and requirements identified during dependency review (III.1.B) and pre-action verification (III.1.C).
     2. **Modularity**:
-     - Write small, focused functions/methods/classes. Aim for high cohesion and low coupling.
-     - Design reusable components to enhance maintainability.
+        - Write small, focused functions/methods/classes. Aim for high cohesion and low coupling.
+        - Design reusable components to enhance maintainability.
     3. **Clarity and Readability**:
-     - Use meaningful names for variables, functions, and classes.
-     - Follow language-specific formatting conventions (e.g., PEP 8 for Python).
-     - Add comments only for complex logic or intent, avoiding redundant explanations of *what* the code does.
-     - Provide complete, runnable code blocks or snippets as appropriate for the task step.
+        - Use meaningful names for variables, functions, and classes.
+        - Follow language-specific formatting conventions (e.g., PEP 8 for Python).
+        - Add comments only for complex logic or intent, avoiding redundant explanations of *what* the code does.
+        - Provide complete, runnable code blocks or snippets as appropriate for the task step.
     4. **Error Handling**:
-     - Anticipate errors (e.g., invalid inputs, file not found) and implement robust handling (e.g., try-except, return value checks).
-     - Validate inputs and assumptions to prevent errors early.
+        - Anticipate errors (e.g., invalid inputs, file not found) and implement robust handling (e.g., try-except, return value checks).
+        - Validate inputs and assumptions to prevent errors early.
     5. **Efficiency**:
-     - Prioritize clarity and correctness but be mindful of algorithmic complexity for performance-critical tasks.
+        - Prioritize clarity and correctness but be mindful of algorithmic complexity for performance-critical tasks.
     6. **Documentation**:
-     - Add docstrings or comments for public APIs or complex functions, detailing purpose, parameters, and return values.
-     - Keep documentation concise and synchronized with code changes.
+        - Add docstrings or comments for public APIs or complex functions, detailing purpose, parameters, and return values.
+        - Keep documentation concise and synchronized with code changes.
     7. **Testing**:
-     - Write testable code and, where applicable, suggest or include unit tests for new functionality or fixes.
+        - Write testable code and, where applicable, suggest or include unit tests for new functionality or fixes.
     8. **Dependency Management**:
-     - Use existing dependencies where possible. Avoid adding new external libraries unless explicitly planned.
-     - If code changes introduce *new functional dependencies* between project files, prepare to update the relevant mini-tracker (see MUP Additions, Section IV).
+        - Use existing dependencies where possible. Avoid adding new external libraries unless explicitly planned.
+        - If code changes introduce *new functional dependencies* between project files, prepare to update the relevant mini-tracker (see MUP Additions, Section IV).
     9. **Security**:
 
-   - Follow secure coding practices to mitigate vulnerabilities (e.g., avoid injection risks, secure credential handling).
+    - Follow secure coding practices to mitigate vulnerabilities (e.g., avoid injection risks, secure credential handling).
 
 4. **Execution Flowchart**
 
@@ -193,27 +195,28 @@ After Core MUP steps (Section VI of Core Prompt), performed *after each step* of
         ```
 
         *(Use correct dep-type: '<' if A calls B, '>' if B calls A, 'x' if mutual, 'd' if essential doc link)*
+
 3. **Update Domain Module / Implementation Plan Documents (If Significant)**: If the task execution led to a significant design change or outcome not captured in the original plan, briefly note this in the relevant Domain Module (`*_module.md`) or Implementation Plan (`implementation_plan_*.md`).
 4. **Update `.clinerules` [LAST_ACTION_STATE]:** Update `last_action`, `current_phase`, `next_action`, `next_phase`.
     - After a step:
 
-        ```
+        ````markdown
         [LAST_ACTION_STATE]
         last_action: "Completed Step {N} in Execution_{task_name}.md"
         current_phase: "Execution"
         next_action: "Execute Step {N+1} in Execution_{task_name}.md"
         next_phase: "Execution"
-        ```
+        ````
 
     - After completing the last step in a task:
 
-        ```
+        ```markdown
         [LAST_ACTION_STATE]
         last_action: "Completed all steps in Execution_{task_name}.md"
         current_phase: "Execution"
         next_action: "Select next Execution task or transition phase"
         next_phase: "Execution" # Default, change only when *all* planned tasks are done.
-        ```
+        ````
 
     - Upon exiting the phase (as defined in Section I): Use the appropriate state from Section I.
 

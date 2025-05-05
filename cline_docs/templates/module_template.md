@@ -11,36 +11,36 @@ This document describes a major functional area of the system. Include a mini-tr
 
 ## Interfaces
 
-* `{InterfaceName}`: {purpose}
-  * `{Method1}`: {description}
-  * `{Method2}`: {description}
-* Input: [Data received]
-* Output: [Data provided]
-...
+- `{InterfaceName}`: {purpose}
+    - `{Method1}`: {description}
+    - `{Method2}`: {description}
+- Input: [Data received]
+- Output: [Data provided]
+    ...
 
 ## Implementation Details
 
-* Files: [List with 1-line descriptions]
-* Important algorithms: [List with 1-line descriptions]
-* Data Models
-    * `{Model1}`: {description}
-    * `{Model2}`: {description}
+- Files: [List with 1-line descriptions]
+- Important algorithms: [List with 1-line descriptions]
+- Data Models
+    - `{Model1}`: {description}
+    - `{Model2}`: {description}
 
 ## Current Implementation Status
 
-* Completed: [List of completed items]
-* In Progress: [Current work]
-* Pending: [Future work]
+- Completed: [List of completed items]
+- In Progress: [Current work]s
+- Pending: [Future work]
 
 ## Implementation Plans & Tasks
 
-* `implementation_plan_{filename1}.md`
-  * [Task1]: {brief description}
-  * [Task2]: {brief description}
-* `implementation_plan_{filename2}.md`
-  * [Task1]: {brief description}
-  * [Task2]: {brief description}
-...
+- `implementation_plan_{filename1}.md`
+    - [Task1]: {brief description}
+    - [Task2]: {brief description}
+- `implementation_plan_{filename2}.md`
+    _[Task1]: {brief description}
+    _ [Task2]: {brief description}
+    ...
 
 ## Mini Dependency Tracker
 

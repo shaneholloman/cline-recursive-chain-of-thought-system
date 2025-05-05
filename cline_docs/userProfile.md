@@ -70,13 +70,13 @@ Example:
     "last_modified": "2024-07-14T12:00:00Z",
     "proficiency": { "coding": {}, "communication": {}},
     "personality": { "creativity": {}, "patience": {}},
-     "learning_style": { "visual": {}, "auditory": {}},
+        "learning_style": { "visual": {}, "auditory": {}},
     "psychologist_insights": {
-      "jungian_archetypes": "*(To be populated)*",
-      "cbt_insights": "*(To be populated)*",
-      "mbti_tendencies": "*(To be populated)*",
-      "skill_assessments": "*(To be populated)*",
-      "learning_communication_preferences": "*(To be populated)*"
+        "jungian_archetypes": "*(To be populated)*",
+        "cbt_insights": "*(To be populated)*",
+        "mbti_tendencies": "*(To be populated)*",
+        "skill_assessments": "*(To be populated)*",
+        "learning_communication_preferences": "*(To be populated)*"
     }
 }
 ```

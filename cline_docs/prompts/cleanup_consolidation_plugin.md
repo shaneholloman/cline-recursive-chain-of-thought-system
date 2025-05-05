@@ -14,30 +14,30 @@
 **Exiting Cleanup/Consolidation Phase:**
 
 1. **Completion Criteria:**
-   - Consolidation steps (Section III) are complete: relevant information integrated into persistent docs, changelog reorganized.
-   - Cleanup steps (Section IV) are complete: obsolete files identified and archived/removed.
-   - `activeContext.md` reflects the clean, consolidated state.
-   - MUP is followed for all actions.
+    - Consolidation steps (Section III) are complete: relevant information integrated into persistent docs, changelog reorganized.
+    - Cleanup steps (Section IV) are complete: obsolete files identified and archived/removed.
+    - `activeContext.md` reflects the clean, consolidated state.
+    - MUP is followed for all actions.
 2. **`.clinerules` Update (MUP):**
-   - Typically transition back to Set-up/Maintenance for verification or Strategy for next planning cycle:
+    - Typically transition back to Set-up/Maintenance for verification or Strategy for next planning cycle:
 
-     ```
-     [LAST_ACTION_STATE]
-     last_action: "Completed Cleanup/Consolidation Phase"
-     current_phase: "Cleanup/Consolidation"
-     next_action: "Phase Complete - User Action Required"
-     next_phase: "Set-up/Maintenance" # Or "Strategy" if planning next cycle immediately
-     ```
+    ````markdown
+    [LAST_ACTION_STATE]
+    last_action: "Completed Cleanup/Consolidation Phase"
+    current_phase: "Cleanup/Consolidation"
+    next_action: "Phase Complete - User Action Required"
+    next_phase: "Set-up/Maintenance" # Or "Strategy" if planning next cycle immediately
+    ````
 
-   - *Alternative: If the project is now considered fully complete:*
+    - *Alternative: If the project is now considered fully complete:*
 
-     ```
-     [LAST_ACTION_STATE]
-     last_action: "Completed Cleanup/Consolidation Phase - Project Finalized"
-     current_phase: "Cleanup/Consolidation"
-     next_action: "Project Completion - User Review"
-     next_phase: "Project Complete"
-     ```
+    ````markdown
+    [LAST_ACTION_STATE]
+    last_action: "Completed Cleanup/Consolidation Phase - Project Finalized"
+    current_phase: "Cleanup/Consolidation"
+    next_action: "Project Completion - User Review"
+    next_phase: "Project Complete"
+    ````
 
 3. **User Action**: After updating `.clinerules`, pause for user to trigger the next phase.
 
@@ -135,8 +135,9 @@
         <!-- Proposing command to create archive directories. -->
         <ask_followup_question>
           <question>Create archive directories? Proposed command (uses absolute paths, tailored to detected OS/shell):
-          `[Proposed Command Here]`
-          Is this command correct for your OS/shell?</question>
+            [Proposed Command Here]
+            Is this command correct for your OS/shell?
+          </question>
           <follow_up>
             <suggest>Yes, execute this command</suggest>
             <suggest>No, I will provide the correct command</suggest>

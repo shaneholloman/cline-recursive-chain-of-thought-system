@@ -3,6 +3,11 @@ Instructions:  Fill in the placeholders below to create the System Manifest.
 This document provides a high-level overview of the entire system.
 -->
 
+# System Manifest Template
+
+**System Manifest:**
+
+````markdown
 # System: {SystemName}
 
 ## Purpose
@@ -27,12 +32,15 @@ This document provides a high-level overview of the entire system.
 
 ## Version: {version} | Status: {status}
 
+````
+
 ---
 
-Here's a minimalist example for a hypothetical inventory management system:
+> Here's a minimalist example for a hypothetical inventory management system:
 
 **System Manifest:**
 
+````markdown
 # System: Inventory Management System
 
 ## Purpose
@@ -41,6 +49,7 @@ Tracks product inventory, orders, and shipments for e-commerce platform.
 
 ## Architecture
 
+```txt
 [frontend] <-> [api_gateway] <-> [services] <-> [database]
   |                |             |            |
   |                |             |            +-- [Data Models]
@@ -50,6 +59,7 @@ Tracks product inventory, orders, and shipments for e-commerce platform.
   |                +-- [Auth]
   +-- [Admin UI]
   +-- [Customer UI]
+```
 
 ## Module Registry
 
@@ -67,3 +77,5 @@ Tracks product inventory, orders, and shipments for e-commerce platform.
 5. Document changes
 
 ## Version: 0.2 | Status: Development
+
+````

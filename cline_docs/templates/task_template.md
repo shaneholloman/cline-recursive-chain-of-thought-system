@@ -5,8 +5,8 @@ This document provides detailed, procedural guidance for a specific task.
 
 # Task: {TaskName}
 
-   **Parent:** `implementation_plan_{filename}.md` or {ParentTask}
-   **Children:** {SubTasks}
+- **Parent:** `implementation_plan_{filename}.md` or {ParentTask}
+- **Children:** {SubTasks}
 
 ## Objective
 
@@ -20,8 +20,8 @@ This document provides detailed, procedural guidance for a specific task.
 
 1. {Step 1}
 2. {Step 2}
-   - {Substep 2.1}
-   - {Substep 2.2}
+    - {Substep 2.1}
+    - {Substep 2.2}
 3. {Step 3}
 ...
 

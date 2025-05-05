@@ -73,7 +73,8 @@ These files form the project foundation. ***At initialization, you MUST read the
 - `userProfile.md`
 - `progress.md`
 
-**IMPORTANT: Do NOT attempt to read the content of `module_relationship_tracker.md`, `doc_tracker.md` directly.** Their existence should be verified by filename if needed, but their content (keys and dependencies) **MUST** be accessed *only* through `dependency_processor.py` commands, primarily `show-keys` and `show-dependencies`. This conserves context tokens and ensures correct parsing.
+> [!IMPORTANT]
+> Do NOT attempt to read the content of `module_relationship_tracker.md`, `doc_tracker.md` directly.** Their existence should be verified by filename if needed, but their content (keys and dependencies) **MUST** be accessed *only* through `dependency_processor.py` commands, primarily `show-keys` and `show-dependencies`. This conserves context tokens and ensures correct parsing.
 
 If a required file (from the list below) is missing, handle its creation as specified in the **Set-up/Maintenance phase**. The table below provides an overview:
 
@@ -127,7 +128,8 @@ next_phase: "Set-up/Maintenance"
 
 **Workflow Entry Point & Plugin Loading:** Begin each ReCoTs session by reading `.clinerules` (in the project root) to determine `current_phase` and `last_action`. **Based on `next_phase`, load corresponding plugin from `cline_docs/prompts/`.** For example, if `.clinerules` indicates `next_phase: Strategy`, load `strategy_plugin.md` *in conjunction with these Custom instructions*.
 
-**CRITICAL REMINDER**: Before any planning or action, especially in Strategy and Execution phases, you **MUST** analyze dependencies using `show-keys` and `show-dependencies` commands to understand existing relationships. **Failure to do so is a CRITICAL FAILURE**, as the ReCoTs system depends on this knowledge to generate accurate plans and avoid catastrophic missteps. Dependency checking is your first line of defense against project failure.
+> [!CAUTION]
+> **CRITICAL REMINDER**: Before any planning or action, especially in Strategy and Execution phases, you **MUST** analyze dependencies using `show-keys` and `show-dependencies` commands to understand existing relationships. **Failure to do so is a CRITICAL FAILURE**, as the ReCoTs system depends on this knowledge to generate accurate plans and avoid catastrophic missteps. Dependency checking is your first line of defense against project failure.
 
 Proceed through the recursive loop, starting with the phase indicated by `.clinerules`. The typical cycle is:
 **Task Initiation**
@@ -223,7 +225,8 @@ flowchart TD
 
 `module_relationship_tracker.md`, `doc_tracker.md`, and mini-trackers (`*_module.md`) are critical for mapping the project's structure and interconnections. Detailed management steps are in the respective phase plugins (verification in Set-up/Maintenance, planning analysis in Strategy, updates in Execution). **All tracker management MUST use `dependency_processor.py` script commands.** Accurate dependency tracking is essential for strategic planning and efficient context loading during execution; verification should focus on identifying **functional or deep conceptual reliance**, not just surface-level similarity.
 
-**CRITICAL WARNING**: Before ANY planning in the Strategy phase or code generation in the Execution phase, you **MUST** use `show-keys` to identify tracker keys and `show-dependencies` to review existing relationships for relevant modules or files. **Ignoring this step is a CRITICAL FAILURE**, as the ReCoTs system's success hinges on understanding these dependencies to sequence tasks correctly and load minimal, relevant context. Failing to check dependencies risks creating flawed plans or broken code, derailing the entire project.
+> [!CAUTION]
+> **CRITICAL WARNING**: Before ANY planning in the Strategy phase or code generation in the Execution phase, you **MUST** use `show-keys` to identify tracker keys and `show-dependencies` to review existing relationships for relevant modules or files. **Ignoring this step is a CRITICAL FAILURE**, as the ReCoTs system's success hinges on understanding these dependencies to sequence tasks correctly and load minimal, relevant context. Failing to check dependencies risks creating flawed plans or broken code, derailing the entire project.
 
 *Remember, the relationship is stronger than just semantic similarity; it's about the **necessary** knowledge and **intended** interaction between these components in the overall system design, even if the current code is a placeholder.*
 
@@ -260,7 +263,9 @@ flowchart TD
         - The string uses Run-Length Encoding (RLE) for consecutive identical dependency characters (e.g., `n5` means 5 'n's).
         - The character 'o' (self-dependency) is usually omitted in the compressed string but implied on the diagonal.
         - Example Row: `1A1 = n<n3x` (Meaning 1A1 has 'n' dependency on first col key, '<' on second, 'n' on next three, 'x' on sixth).
-- **IMPORTANT**: Do not parse this grid manually. Use `show-dependencies` to interpret relationships.
+
+> [!IMPORTANT]
+> Do not parse this grid manually. Use `show-dependencies` to interpret relationships.
 
 **Dependency Characters:**
 
@@ -296,7 +301,8 @@ The MUP must be followed immediately after any state-changing action:
 
 Located in `cline_utils/`. **All commands are executed via `python -m cline_utils.dependency_system.dependency_processor <command> [args...]`.** Most commands return a status message upon completion.
 
-**IMPORTANT: To ensure data consistency, conserve context window tokens, and leverage built-in parsing logic, ALWAYS use the `show-keys` and `show-dependencies` commands to retrieve key definitions and dependency information from tracker files (`*_tracker.md`, `*_module.md`). Avoid using `read_file` on tracker files for this purpose.** Direct reading can lead to parsing errors and consumes excessive context.
+> [!IMPORTANT]
+> To ensure data consistency, conserve context window tokens, and leverage built-in parsing logic, ALWAYS use the `show-keys` and `show-dependencies` commands to retrieve key definitions and dependency information from tracker files (`*_tracker.md`, `*_module.md`). Avoid using `read_file` on tracker files for this purpose.** Direct reading can lead to parsing errors and consumes excessive context.
 
 **Core Commands for ReCoTs Workflow:**
 
@@ -426,6 +432,7 @@ This process is part of the **Set-up/Maintenance phase** and is performed if the
 5. **MUP**: Follow the Mandatory Update Protocol.
 
 **Example Chain of Thought:**
+
 "Scanning the project root, I see directories: `.vscode`, `docs`, `cline_docs`, `src`, `cline_utils`, `venv`. `.vscode` and `venv` are excluded as they are IDE config and a virtual environment, respectively. `docs` and `cline_docs` are excluded as they are documentation. `src` contains Python files directly, so it's a strong candidate. `cline_utils` also contains `.py` files, but appears to be a parat of the ReCoTs system and not project-specific, so it’s excluded. Therefore, I will add `src` and not `cline_utils` to the `[CODE_ROOT_DIRECTORIES]` section of `.clinerules`."
 
 ## XI. Identifying Documentation Directories
@@ -446,6 +453,7 @@ This process is part of the **Set-up/Maintenance phase** and should be performed
 5. **MUP:** Follow the Mandatory Update Protocol.
 
 **Example Chain of Thought:**
+
 "Scanning the project root, I see directories: `docs`, `documentation`, `src`, `tests`. `docs` contains primarily Markdown files describing the project architecture and API. `documentation` contains user guides in HTML format. Both appear to be documentation directories. `src` and `tests` contain code and are already identified as code root directories. Therefore, I will add `docs` and `documentation` to the `[DOC_DIRECTORIES]` section of `.clinerules`."
 
 ## XII. Hierarchical Design Token Architecture (HDTA)
@@ -484,4 +492,5 @@ The LLM **MUST** perform a complete Mandatory Update Protocol (MUP) **every 5 tu
 
 The ReCoTs framework manages complex tasks via recursive decomposition and persistent state across distinct phases: Set-up/Maintenance, Strategy, Execution, and Cleanup/Consolidation. Adhere to this core prompt and the phase-specific plugin instructions loaded from `cline_docs/prompts/` for effective task management. Always prioritize understanding dependencies and maintaining accurate state through the MUP.
 
-**Adhere to the "Don't Repeat Yourself" (DRY) and Separation of Concerns principles.**
+> [!IMPORTANT]
+> **Adhere to the "Don't Repeat Yourself" (DRY) and Separation of Concerns principles.**
