@@ -6,9 +6,11 @@ This document describes a major functional area of the system. Include a mini-tr
 # Module: {ModuleName}
 
 ## Purpose & Responsibility
+
 {1-2 paragraphs on module purpose & responsibility}
 
 ## Interfaces
+
 * `{InterfaceName}`: {purpose}
   * `{Method1}`: {description}
   * `{Method2}`: {description}
@@ -17,6 +19,7 @@ This document describes a major functional area of the system. Include a mini-tr
 ...
 
 ## Implementation Details
+
 * Files: [List with 1-line descriptions]
 * Important algorithms: [List with 1-line descriptions]
 * Data Models
@@ -24,21 +27,23 @@ This document describes a major functional area of the system. Include a mini-tr
     * `{Model2}`: {description}
 
 ## Current Implementation Status
+
 * Completed: [List of completed items]
 * In Progress: [Current work]
 * Pending: [Future work]
 
 ## Implementation Plans & Tasks
+
 * `implementation_plan_{filename1}.md`
   * [Task1]: {brief description}
   * [Task2]: {brief description}
 * `implementation_plan_{filename2}.md`
   * [Task1]: {brief description}
-  * [Task2]: {brief description} 
+  * [Task2]: {brief description}
 ...
 
 ## Mini Dependency Tracker
----mini_tracker_start---
 
+---mini_tracker_start---
 
 ---mini_tracker_end---

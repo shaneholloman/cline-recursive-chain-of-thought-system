@@ -94,8 +94,8 @@ DEFAULT_CONFIG = {
         ".old",
         ".orig",
         ".embedding",
-        ".npy"
-    ],  
+        ".npy",
+    ],
     "thresholds": {"doc_similarity": 0.65, "code_similarity": 0.7},
     "models": {
         "doc_model_name": "all-mpnet-base-v2",
@@ -110,30 +110,32 @@ DEFAULT_CONFIG = {
         "embeddings_dir": "cline_utils/dependency_system/analysis/embeddings",
         "backups_dir": "cline_docs/backups",
     },
-    "excluded_paths": [
-        "src/node_modules",
-        "src/client/node_modules"
-    ],
-    "allowed_dependency_chars": ['<', '>', 'x', 'd', 's', 'S'],
+    "excluded_paths": ["src/node_modules", "src/client/node_modules"],
+    "allowed_dependency_chars": ["<", ">", "x", "d", "s", "S"],
     "excluded_file_patterns": [
         "*_module.md",
         "implementation_plan_*.md",
-        "*_task.md" # Future task file pattern (to be confirmed)
-    ]              
+        "*_task.md",  # Future task file pattern (to be confirmed)
+    ],
 }
 
 # Define character priorities (Higher number = higher priority) - Centralized definition
 # Conforms to the existing convention in dependency_suggester.py
 CHARACTER_PRIORITIES = {
-    'x': 5,
-    '<': 4, '>': 4, 'd': 4, 'n': 4,
-    'S': 3,
-    's': 2,
-    'p': 1, 'o': 1,
-    '-': 0, # Placeholder_char (Assign lowest numeric priority > 0)
-    ' ': 0  # Empty_char
+    "x": 5,
+    "<": 4,
+    ">": 4,
+    "d": 4,
+    "n": 4,
+    "S": 3,
+    "s": 2,
+    "p": 1,
+    "o": 1,
+    "-": 0,  # Placeholder_char (Assign lowest numeric priority > 0)
+    " ": 0,  # Empty_char
 }
-DEFAULT_PRIORITY = 0 # Default for unknown characters (lowest priority)
+DEFAULT_PRIORITY = 0  # Default for unknown characters (lowest priority)
+
 
 class ConfigManager:
     """
@@ -147,7 +149,7 @@ class ConfigManager:
     def __new__(cls):
         """
         Singleton pattern implementation to ensure only one config instance.
-        
+
         Returns:
             ConfigManager instance
         """
@@ -162,9 +164,9 @@ class ConfigManager:
             return
 
         self._config = None  # Initialize config
-        self._config_path = None # Initialize config path
+        self._config_path = None  # Initialize config path
         self._load_config()  # Load or create default config
-        
+
         # Set default exclusions if not present
         if "excluded_dirs" not in self._config:
             self._config["excluded_dirs"] = DEFAULT_CONFIG["excluded_dirs"]
@@ -182,14 +184,16 @@ class ConfigManager:
     def config(self) -> Dict[str, Any]:
         """
         Get the configuration dictionary.
-        
+
         Returns:
             Configuration dictionary
         """
         from .cache_manager import cached
 
-        @cached("config_data",
-                key_func=lambda self: f"config:{os.path.getmtime(self.config_path) if os.path.exists(self.config_path) else 'missing'}")
+        @cached(
+            "config_data",
+            key_func=lambda self: f"config:{os.path.getmtime(self.config_path) if os.path.exists(self.config_path) else 'missing'}",
+        )
         def _get_config(self) -> Dict[str, Any]:
             if self._config is None:
                 self._load_config()
@@ -201,7 +205,7 @@ class ConfigManager:
     def config_path(self) -> str:
         """
         Get the path to the configuration file.
-        
+
         Returns:
             Path to the configuration file
         """
@@ -219,7 +223,7 @@ class ConfigManager:
         """Load configuration from file or create default."""
         try:
             if os.path.exists(normalize_path(self.config_path)):
-                with open(normalize_path(self.config_path), 'r', encoding='utf-8') as f:
+                with open(normalize_path(self.config_path), "r", encoding="utf-8") as f:
                     self._config = json.load(f)
             else:
                 self._config = DEFAULT_CONFIG.copy()
@@ -231,13 +235,13 @@ class ConfigManager:
     def _save_config(self) -> bool:
         """
         Save configuration to file.
-        
+
         Returns:
             True if successful, False otherwise
         """
         try:
             os.makedirs(os.path.dirname(normalize_path(self.config_path)), exist_ok=True)
-            with open(normalize_path(self.config_path), 'w', encoding='utf-8') as f:
+            with open(normalize_path(self.config_path), "w", encoding="utf-8") as f:
                 json.dump(self._config, f, indent=2)
             return True
         except OSError as e:
@@ -249,7 +253,7 @@ class ConfigManager:
 
     def update_config_setting(self, key: str, value: Union[str, int, float, List, Dict]) -> bool:
         """Update a specific configuration setting."""
-        keys = key.split('.')
+        keys = key.split(".")
         current = self.config
         for k in keys[:-1]:
             if k not in current or not isinstance(current[k], dict):
@@ -266,14 +270,16 @@ class ConfigManager:
     def get_excluded_dirs(self) -> List[str]:
         """
         Get list of excluded directories.
-        
+
         Returns:
             List of excluded directory names
         """
         from .cache_manager import cached
 
-        @cached("excluded_dirs",
-                key_func=lambda self: f"excluded_dirs:{os.path.getmtime(self.config_path) if os.path.exists(self.config_path) else 'missing'}")
+        @cached(
+            "excluded_dirs",
+            key_func=lambda self: f"excluded_dirs:{os.path.getmtime(self.config_path) if os.path.exists(self.config_path) else 'missing'}",
+        )
         def _get_excluded_dirs(self) -> List[str]:
             return self.config.get("excluded_dirs", DEFAULT_CONFIG["excluded_dirs"])
 
@@ -282,14 +288,16 @@ class ConfigManager:
     def get_excluded_extensions(self) -> List[str]:
         """
         Get list of excluded file extensions.
-        
+
         Returns:
             List of excluded file extensions
         """
         from .cache_manager import cached
 
-        @cached("excluded_extensions",
-                key_func=lambda self: f"excluded_extensions:{os.path.getmtime(self.config_path) if os.path.exists(self.config_path) else 'missing'}")
+        @cached(
+            "excluded_extensions",
+            key_func=lambda self: f"excluded_extensions:{os.path.getmtime(self.config_path) if os.path.exists(self.config_path) else 'missing'}",
+        )
         def _get_excluded_extensions(self) -> List[str]:
             return self.config.get("excluded_extensions", DEFAULT_CONFIG["excluded_extensions"])
 
@@ -298,30 +306,38 @@ class ConfigManager:
     def get_excluded_paths(self) -> List[str]:
         """
         Get list of excluded paths from configuration.
-        
+
         Returns:
             List of excluded path patterns or absolute paths
         """
         from .cache_manager import cached
 
-        @cached("excluded_paths",
-                key_func=lambda self: f"excluded_paths:{os.path.getmtime(self.config_path) if os.path.exists(self.config_path) else 'missing'}")
+        @cached(
+            "excluded_paths",
+            key_func=lambda self: f"excluded_paths:{os.path.getmtime(self.config_path) if os.path.exists(self.config_path) else 'missing'}",
+        )
         def _get_excluded_paths(self) -> List[str]:
             # Retrieve excluded_paths from config, defaulting to DEFAULT_CONFIG value
             excluded_paths_config = self.config.get("excluded_paths", DEFAULT_CONFIG["excluded_paths"])
-            excluded_file_patterns = self.config.get("excluded_file_patterns", DEFAULT_CONFIG.get("excluded_file_patterns", [])) # Get file patterns, default to empty list if not set
-            
+            excluded_file_patterns = self.config.get(
+                "excluded_file_patterns", DEFAULT_CONFIG.get("excluded_file_patterns", [])
+            )  # Get file patterns, default to empty list if not set
+
             excluded_paths = []
             project_root = get_project_root()
 
             # 1. Explicitly excluded paths
-            excluded_paths.extend([normalize_path(os.path.join(project_root, p)) if not os.path.isabs(p) else normalize_path(p)
-                                     for p in excluded_paths_config])
+            excluded_paths.extend(
+                [
+                    normalize_path(os.path.join(project_root, p)) if not os.path.isabs(p) else normalize_path(p)
+                    for p in excluded_paths_config
+                ]
+            )
 
             # 2. Paths from excluded file patterns
             for pattern in excluded_file_patterns:
                 # Construct the full pattern relative to the project root
-                full_pattern = normalize_path(os.path.join(project_root, '**', pattern)) # Use '**' for recursion
+                full_pattern = normalize_path(os.path.join(project_root, "**", pattern))  # Use '**' for recursion
                 # Use glob with recursive=True to find matching paths
                 matching_paths = glob.glob(full_pattern, recursive=True)
                 excluded_paths.extend([normalize_path(p) for p in matching_paths])
@@ -330,27 +346,26 @@ class ConfigManager:
 
         return _get_excluded_paths(self)
 
-
     def get_threshold(self, threshold_type: str) -> float:
         """
         Get threshold value.
-        
+
         Args:
             threshold_type: Type of threshold ('doc_similarity' or 'code_similarity')
-            
+
         Returns:
             Threshold value
         """
         thresholds = self.config.get("thresholds", DEFAULT_CONFIG["thresholds"])
         return thresholds.get(threshold_type, 0.7)
-    
+
     def get_model_name(self, model_type: str) -> str:
         """
         Get model name.
-        
+
         Args:
             model_type: Type of model ('doc_model_name' or 'code_model_name')
-            
+
         Returns:
             Model name
         """
@@ -360,11 +375,11 @@ class ConfigManager:
     def get_path(self, path_type: str, default_path: Optional[str] = None) -> str:
         """
         Get path from configuration.
-        
+
         Args:
             path_type: Type of path ('doc_dir', 'memory_dir', or 'embeddings_dir')
             default_path: Default path to use if not found in configuration
-            
+
         Returns:
             Path from configuration or default
         """
@@ -383,13 +398,15 @@ class ConfigManager:
         """
         from .cache_manager import cached
 
-        @cached("code_roots",
-                key_func=lambda self: f"code_roots:{os.path.getmtime(os.path.join(get_project_root(), '.clinerules')) if os.path.exists(os.path.join(get_project_root(), '.clinerules')) else 'missing'}")
+        @cached(
+            "code_roots",
+            key_func=lambda self: f"code_roots:{os.path.getmtime(os.path.join(get_project_root(), '.clinerules')) if os.path.exists(os.path.join(get_project_root(), '.clinerules')) else 'missing'}",
+        )
         def _get_code_root_directories(self) -> List[str]:
             clinerules_path = os.path.join(get_project_root(), ".clinerules")
             code_root_dirs = []
             try:
-                with open(clinerules_path, 'r', encoding='utf-8') as f:
+                with open(clinerules_path, "r", encoding="utf-8") as f:
                     lines = f.readlines()
                 in_code_root_section = False
                 for line in lines:
@@ -400,10 +417,11 @@ class ConfigManager:
                     if in_code_root_section:
                         if line.startswith("-"):
                             # Normalize path *before* adding to list
-                            path_part = line[1:].strip() # Get content after '-'
-                            if path_part: # Ensure it's not just '-'
+                            path_part = line[1:].strip()  # Get content after '-'
+                            if path_part:  # Ensure it's not just '-'
                                 code_root_dirs.append(normalize_path(path_part))
-                        elif line.startswith("["): break # Reached next section
+                        elif line.startswith("["):
+                            break  # Reached next section
             except FileNotFoundError:
                 logger.warning("'.clinerules' file not found. Cannot read code root directories.")
             except Exception as e:
@@ -424,13 +442,15 @@ class ConfigManager:
         """
         from .cache_manager import cached
 
-        @cached("doc_dirs",
-                key_func=lambda self: f"doc_dirs:{os.path.getmtime(os.path.join(get_project_root(), '.clinerules')) if os.path.exists(os.path.join(get_project_root(), '.clinerules')) else 'missing'}")
+        @cached(
+            "doc_dirs",
+            key_func=lambda self: f"doc_dirs:{os.path.getmtime(os.path.join(get_project_root(), '.clinerules')) if os.path.exists(os.path.join(get_project_root(), '.clinerules')) else 'missing'}",
+        )
         def _get_doc_directories(self) -> List[str]:
             clinerules_path = os.path.join(get_project_root(), ".clinerules")
             doc_dirs = []
             try:
-                with open(clinerules_path, 'r', encoding='utf-8') as f:
+                with open(clinerules_path, "r", encoding="utf-8") as f:
                     lines = f.readlines()
                 in_doc_section = False
                 for line in lines:
@@ -440,13 +460,14 @@ class ConfigManager:
                         continue
                     if in_doc_section:
                         if line.startswith("-"):
-                             # Normalize path *before* adding to list
-                            path_part = line[1:].strip() # Get content after '-'
-                            if path_part: # Ensure it's not just '-'
+                            # Normalize path *before* adding to list
+                            path_part = line[1:].strip()  # Get content after '-'
+                            if path_part:  # Ensure it's not just '-'
                                 doc_dirs.append(normalize_path(path_part))
-                        elif line.startswith("["): break # Reached next section
+                        elif line.startswith("["):
+                            break  # Reached next section
             except FileNotFoundError:
-                 logger.warning("'.clinerules' file not found. Cannot read doc directories.")
+                logger.warning("'.clinerules' file not found. Cannot read doc directories.")
             except Exception as e:
                 logger.error(f"Error reading .clinerules for doc dirs: {e}")
             # *** SORT the result alphabetically ***
@@ -464,10 +485,10 @@ class ConfigManager:
     def update_config(self, updates: Dict[str, Any]) -> bool:
         """
         Update configuration with new values.
-        
+
         Args:
             updates: Dictionary of configuration updates
-            
+
         Returns:
             True if successful, False otherwise
         """
@@ -482,7 +503,7 @@ class ConfigManager:
     def _deep_update(self, d: Dict[str, Any], u: Dict[str, Any]) -> None:
         """
         Recursively update a dictionary.
-        
+
         Args:
             d: Dictionary to update
             u: Dictionary with updates
@@ -496,7 +517,7 @@ class ConfigManager:
     def reset_to_defaults(self) -> bool:
         """
         Reset configuration to default values.
-        
+
         Returns:
             True if successful, False otherwise
         """

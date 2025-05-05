@@ -6,17 +6,21 @@ This document provides a high-level overview of the entire system.
 # System: {SystemName}
 
 ## Purpose
+
 {1-2 sentences describing system purpose}
 
 ## Architecture
+
 {ASCII diagram of system Modules}
 
 ## Module Registry
+
 - [{module_dir}/{module_dir1}]: {brief description}
 - [{module_dir}/{module_dir2}]: {brief description}
 ...
 
 ## Development Workflow
+
 1. {First step}
 2. {Second step}
 ...
@@ -32,26 +36,30 @@ Here's a minimalist example for a hypothetical inventory management system:
 # System: Inventory Management System
 
 ## Purpose
+
 Tracks product inventory, orders, and shipments for e-commerce platform.
 
 ## Architecture
+
 [frontend] <-> [api_gateway] <-> [services] <-> [database]
   |                |             |            |
   |                |             |            +-- [Data Models]
   |                |             +-- [Order Service]
-  |                |             +-- [Inventory Service] 
+  |                |             +-- [Inventory Service]
   |                |             +-- [Shipping Service]
   |                +-- [Auth]
   +-- [Admin UI]
   +-- [Customer UI]
 
 ## Module Registry
+
 - [src/frontend]: User interfaces
 - [src/frontend/api_gateway]: Request routing
 - [src/frontend/api_gateway/services]: Business logic
 - [src/frontend/api_gateway/services/database]: Data storage
 
 ## Development Workflow
+
 1. Update documentation
 2. Create task instructions
 3. Implement features

@@ -2,24 +2,24 @@
 
 ## Overview
 
-The CRCT cache system is designed to boost performance by storing the results of potentially costly function calls (like file analysis or embedding lookups) and reusing them when the same inputs occur again. It's a dynamic system based on Time-To-Live (TTL) expiration and automatic cleanup.
+The recots cache system is designed to boost performance by storing the results of potentially costly function calls (like file analysis or embedding lookups) and reusing them when the same inputs occur again. It's a dynamic system based on Time-To-Live (TTL) expiration and automatic cleanup.
 
-#### Core Components:
+### Core Components
 
-1.  **`Cache` Class**: A single cache instance holding data (`key -> value`), access times, and optional dependency information. It manages TTL expiration and LRU (Least Recently Used) eviction when size limits are reached.
-2.  **`CacheManager` Class**: Oversees all active `Cache` instances. It creates caches on-demand when they are first requested (e.g., via the `@cached` decorator) and handles the cleanup of expired caches to free up memory.
-3.  **`@cached` Decorator**: The primary way to enable caching for a function.
+1. **`Cache` Class**: A single cache instance holding data (`key -> value`), access times, and optional dependency information. It manages TTL expiration and LRU (Least Recently Used) eviction when size limits are reached.
+2. **`CacheManager` Class**: Oversees all active `Cache` instances. It creates caches on-demand when they are first requested (e.g., via the `@cached` decorator) and handles the cleanup of expired caches to free up memory.
+3. **`@cached` Decorator**: The primary way to enable caching for a function.
 
-#### Key Features:
+#### Key Features
 
--   **Dynamic Cache Creation**: Caches are created automatically the first time a specific `cache_name` is used with the `@cached` decorator. There's no need to predefine caches.
--   **Automatic Expiration (TTL)**: Each cache instance has a default TTL. If a cache is not accessed within its TTL, it becomes eligible for removal by the `CacheManager`. Individual cached items within a cache also respect TTL settings.
--   **LRU Eviction**: When an individual cache instance reaches its maximum size limit, it removes the least recently used item to make space.
--   **Targeted Invalidation**: Functions are provided to clear specific cache entries based on key patterns (supports regex) or automatically when dependent files are modified.
--   **Optional Persistence**: The system includes code to save/load caches to disk, although this feature is **disabled by default** in the current version.
--   **Isolation**: Each cache (identified by its unique `cache_name`) operates independently. Clearing one cache does not affect others.
+- **Dynamic Cache Creation**: Caches are created automatically the first time a specific `cache_name` is used with the `@cached` decorator. There's no need to predefine caches.
+- **Automatic Expiration (TTL)**: Each cache instance has a default TTL. If a cache is not accessed within its TTL, it becomes eligible for removal by the `CacheManager`. Individual cached items within a cache also respect TTL settings.
+- **LRU Eviction**: When an individual cache instance reaches its maximum size limit, it removes the least recently used item to make space.
+- **Targeted Invalidation**: Functions are provided to clear specific cache entries based on key patterns (supports regex) or automatically when dependent files are modified.
+- **Optional Persistence**: The system includes code to save/load caches to disk, although this feature is **disabled by default** in the current version.
+- **Isolation**: Each cache (identified by its unique `cache_name`) operates independently. Clearing one cache does not affect others.
 
-For most interactions with the CRCT system via the LLM, the cache operates transparently in the background. This guide provides details for users interested in understanding the mechanism or potentially leveraging it in custom scripts.
+For most interactions with the recots system via the LLM, the cache operates transparently in the background. This guide provides details for users interested in understanding the mechanism or potentially leveraging it in custom scripts.
 
 ---
 
@@ -27,7 +27,7 @@ For most interactions with the CRCT system via the LLM, the cache operates trans
 
 The primary interface for enabling caching is the `@cached` decorator.
 
-#### Basic Usage
+### Basic Usage
 
 To cache a function's results, decorate it with `@cached`, providing a unique `cache_name` and typically a `key_func` to generate a unique string key based on the function's arguments.
 
@@ -59,10 +59,10 @@ result3 = potentially_slow_function(10)
 print(f"Result 3: {result3}")
 ```
 
--   `"my_function_cache"`: This name identifies the specific cache instance used for this function. A new `Cache` object is created dynamically by the `CacheManager` the first time this name is encountered.
--   `key_func=create_cache_key`: This function takes the arguments passed to `potentially_slow_function` and generates a unique string identifier for the cache entry.
+- `"my_function_cache"`: This name identifies the specific cache instance used for this function. A new `Cache` object is created dynamically by the `CacheManager` the first time this name is encountered.
+- `key_func=create_cache_key`: This function takes the arguments passed to `potentially_slow_function` and generates a unique string identifier for the cache entry.
 
-#### Advanced Usage: TTL and Dependencies
+### Advanced Usage: TTL and Dependencies
 
 You can customize the Time-To-Live for a specific cache or define dependencies.
 
@@ -95,7 +95,7 @@ def process_file_data(file_id):
 
 If the underlying file changes, functions like `check_file_modified` can trigger invalidation for caches linked to that file path.
 
-#### Manual Invalidation
+### Manual Invalidation
 
 While the system often handles invalidation automatically (e.g., based on file modification), you can manually clear entries using `invalidate_dependent_entries` or clear entire caches using the CLI command.
 
@@ -113,7 +113,7 @@ invalidate_dependent_entries(cache_name="my_function_cache", key_pattern="my_fun
 
 The most straightforward way for a user to clear all caches is via the `dependency_processor.py` command:
 
-```bash
+```sh
 python -m cline_utils.dependency_system.dependency_processor clear-caches
 ```
 
@@ -123,9 +123,9 @@ The LLM can execute this command if you suspect caching issues are causing probl
 
 ## Cache Management Details
 
--   **On-Demand Creation & Cleanup**: Caches are created by the `CacheManager` when first requested via `@cached(cache_name=...)`. The manager periodically cleans up `Cache` instances that haven't been accessed within their TTL, conserving memory.
--   **LRU Eviction**: Individual `Cache` instances have size limits. When full, the least recently used entry is removed.
--   **Dependency Tracking**: The system can link cache entries to dependencies (like file paths). Modifying a file triggers `check_file_modified`, which uses `invalidate_dependent_entries` to clear relevant cached data (e.g., analysis results for that file).
+- **On-Demand Creation & Cleanup**: Caches are created by the `CacheManager` when first requested via `@cached(cache_name=...)`. The manager periodically cleans up `Cache` instances that haven't been accessed within their TTL, conserving memory.
+- **LRU Eviction**: Individual `Cache` instances have size limits. When full, the least recently used entry is removed.
+- **Dependency Tracking**: The system can link cache entries to dependencies (like file paths). Modifying a file triggers `check_file_modified`, which uses `invalidate_dependent_entries` to clear relevant cached data (e.g., analysis results for that file).
 
 ---
 
@@ -133,9 +133,9 @@ The LLM can execute this command if you suspect caching issues are causing probl
 
 Cache behavior can be tuned by modifying constants directly within `cline_utils/dependency_system/utils/cache_manager.py`:
 
--   `DEFAULT_TTL` (seconds): Default expiration time for cache instances and entries (currently 600 seconds / 10 minutes).
--   `DEFAULT_MAX_SIZE`: Default maximum number of items per cache instance (currently 1000).
--   `CACHE_SIZES` (dictionary): Allows setting different `max_size` values for specific `cache_name`s (e.g., `{"embeddings_generation": 100, "key_generation": 5000}`).
+- `DEFAULT_TTL` (seconds): Default expiration time for cache instances and entries (currently 600 seconds / 10 minutes).
+- `DEFAULT_MAX_SIZE`: Default maximum number of items per cache instance (currently 1000).
+- `CACHE_SIZES` (dictionary): Allows setting different `max_size` values for specific `cache_name`s (e.g., `{"embeddings_generation": 100, "key_generation": 5000}`).
 
 *Note: Modifying these requires directly editing the Python file.*
 

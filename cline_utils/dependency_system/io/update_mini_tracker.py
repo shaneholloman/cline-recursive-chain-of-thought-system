@@ -1,7 +1,9 @@
 """
 IO module for mini tracker specific data.
 """
+
 from typing import Dict, Tuple
+
 
 def get_mini_tracker_data() -> Dict[str, any]:
     """Returns the data structure for mini tracker."""
@@ -37,11 +39,11 @@ def get_mini_tracker_data() -> Dict[str, any]:
 * [Task2]: {{brief description}}
 * `implementation_plan_{{filename2}}.md`
 * [Task1]: {{brief description}}
-* [Task2]: {{brief description}} 
+* [Task2]: {{brief description}}
 ...
 
 ## Mini Dependency Tracker
 ---mini_tracker_start---
 """,
-        "markers": ("---mini_tracker_start---", "---mini_tracker_end---")
+        "markers": ("---mini_tracker_start---", "---mini_tracker_end---"),
     }

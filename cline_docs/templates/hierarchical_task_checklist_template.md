@@ -30,11 +30,13 @@
   - [ ] Etc.
 
 ## Progress Summary
+
 - **Completed Items**: [Count or list key completed items]
 - **Next Priority Tasks**: [List the next tasks to focus on based on sequence and priority]
 - **Notes**: [Any additional notes on blockers, dependencies, or urgent items]
 
 **Instructions**:
+
 - Check off `[ ]` to `[x]` for each item as it is completed.
 - Update the "Progress Summary" section periodically to reflect the current state.
 - Use this checklist to quickly identify the next task or area requiring attention.

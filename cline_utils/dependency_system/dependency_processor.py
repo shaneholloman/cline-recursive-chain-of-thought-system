@@ -16,20 +16,49 @@ import glob
 from typing import Dict, List, Tuple, Any, Optional, Set
 
 from cline_utils.dependency_system.analysis.project_analyzer import analyze_project
-from cline_utils.dependency_system.core.dependency_grid import PLACEHOLDER_CHAR, compress, decompress, get_char_at, set_char_at, add_dependency_to_grid, get_dependencies_from_grid
+from cline_utils.dependency_system.core.dependency_grid import (
+    PLACEHOLDER_CHAR,
+    compress,
+    decompress,
+    get_char_at,
+    set_char_at,
+    add_dependency_to_grid,
+    get_dependencies_from_grid,
+)
+
 # Renamed function import
-from cline_utils.dependency_system.io.tracker_io import remove_key_from_tracker, merge_trackers, read_tracker_file, write_tracker_file, export_tracker, update_tracker
+from cline_utils.dependency_system.io.tracker_io import (
+    remove_key_from_tracker,
+    merge_trackers,
+    read_tracker_file,
+    write_tracker_file,
+    export_tracker,
+    update_tracker,
+)
+
 # Removed KEY_PATTERN import
 from cline_utils.dependency_system.utils.path_utils import get_project_root, normalize_path
 from cline_utils.dependency_system.utils.config_manager import ConfigManager
-from cline_utils.dependency_system.utils.cache_manager import clear_all_caches, file_modified, invalidate_dependent_entries # Added invalidate
+from cline_utils.dependency_system.utils.cache_manager import (
+    clear_all_caches,
+    file_modified,
+    invalidate_dependent_entries,
+)  # Added invalidate
 from cline_utils.dependency_system.analysis.dependency_analyzer import analyze_file
+
 # Added for show-dependencies and other utilities
-from cline_utils.dependency_system.core.key_manager import generate_keys, KeyInfo, KeyGenerationError, validate_key, sort_key_strings_hierarchically, load_global_key_map
+from cline_utils.dependency_system.core.key_manager import (
+    generate_keys,
+    KeyInfo,
+    KeyGenerationError,
+    validate_key,
+    sort_key_strings_hierarchically,
+    load_global_key_map,
+)
 
 
 # Configure logging (moved to main block)
-logger = logging.getLogger(__name__) # Get logger for this module
+logger = logging.getLogger(__name__)  # Get logger for this module
 
 # --- Constants for markers ---
 KEY_DEFINITIONS_START_MARKER = "---KEY_DEFINITIONS_START---"
@@ -44,58 +73,68 @@ def _load_global_map_or_exit() -> Dict[str, KeyInfo]:
     if path_to_key_info is None:
         print("Error: Global key map not found or failed to load.", file=sys.stderr)
         print("Please run 'analyze-project' first to generate the key map.", file=sys.stderr)
-        logger.critical("Global key map missing or invalid. Exiting.") # Use critical for exit condition
-        sys.exit(1) # Exit the script
+        logger.critical("Global key map missing or invalid. Exiting.")  # Use critical for exit condition
+        sys.exit(1)  # Exit the script
     logger.info("Global key map loaded successfully.")
     return path_to_key_info
+
 
 # <<< NEW UTILITY FUNCTION: Find Trackers >>>
 def _find_all_tracker_paths(config: ConfigManager, project_root: str) -> Set[str]:
     """Finds all main, doc, and mini tracker files in the project."""
     all_tracker_paths = set()
-    memory_dir_rel = config.get_path('memory_dir')
+    memory_dir_rel = config.get_path("memory_dir")
     if not memory_dir_rel:
         logger.warning("memory_dir not configured. Cannot find main/doc trackers.")
         memory_dir_abs = None
     else:
         memory_dir_abs = normalize_path(os.path.join(project_root, memory_dir_rel))
-        logger.debug(f"Path Components: project_root='{project_root}', memory_dir_rel='{memory_dir_rel}', calculated memory_dir_abs='{memory_dir_abs}'")
+        logger.debug(
+            f"Path Components: project_root='{project_root}', memory_dir_rel='{memory_dir_rel}', calculated memory_dir_abs='{memory_dir_abs}'"
+        )
 
         # Main Tracker
-        main_tracker_abs = config.get_path("main_tracker_filename", os.path.join(memory_dir_abs, "module_relationship_tracker.md"))
+        main_tracker_abs = config.get_path(
+            "main_tracker_filename", os.path.join(memory_dir_abs, "module_relationship_tracker.md")
+        )
         logger.debug(f"Using main_tracker_abs from config (or default): '{main_tracker_abs}'")
-        if os.path.exists(main_tracker_abs): all_tracker_paths.add(main_tracker_abs)
-        else: logger.debug(f"Main tracker not found at: {main_tracker_abs}")
+        if os.path.exists(main_tracker_abs):
+            all_tracker_paths.add(main_tracker_abs)
+        else:
+            logger.debug(f"Main tracker not found at: {main_tracker_abs}")
 
         # Doc Tracker
         doc_tracker_abs = config.get_path("doc_tracker_filename", os.path.join(memory_dir_abs, "doc_tracker.md"))
         logger.debug(f"Using doc_tracker_abs from config (or default): '{doc_tracker_abs}'")
-        if os.path.exists(doc_tracker_abs): all_tracker_paths.add(doc_tracker_abs)
-        else: logger.debug(f"Doc tracker not found at: {doc_tracker_abs}")
+        if os.path.exists(doc_tracker_abs):
+            all_tracker_paths.add(doc_tracker_abs)
+        else:
+            logger.debug(f"Doc tracker not found at: {doc_tracker_abs}")
 
     # Mini Trackers
     code_roots_rel = config.get_code_root_directories()
     if not code_roots_rel:
-         logger.warning("No code_root_directories configured. Cannot find mini trackers.")
+        logger.warning("No code_root_directories configured. Cannot find mini trackers.")
     else:
         for code_root_rel in code_roots_rel:
             code_root_abs = normalize_path(os.path.join(project_root, code_root_rel))
-            mini_tracker_pattern = os.path.join(code_root_abs, '**', '*_module.md')
+            mini_tracker_pattern = os.path.join(code_root_abs, "**", "*_module.md")
             try:
                 found_mini_trackers = glob.glob(mini_tracker_pattern, recursive=True)
                 normalized_mini_paths = {normalize_path(mt_path) for mt_path in found_mini_trackers}
                 all_tracker_paths.update(normalized_mini_paths)
                 logger.debug(f"Found {len(normalized_mini_paths)} mini trackers under '{code_root_rel}'.")
             except Exception as e:
-                 logger.error(f"Error during glob search for mini trackers under '{code_root_abs}': {e}")
+                logger.error(f"Error during glob search for mini trackers under '{code_root_abs}': {e}")
 
     logger.info(f"Found {len(all_tracker_paths)} total tracker files.")
     return all_tracker_paths
 
+
 # <<< NEW UTILITY FUNCTION: Aggregate Dependencies >>>
 def _aggregate_all_dependencies(
     tracker_paths: Set[str],
-    global_key_map: Dict[str, KeyInfo] # Pass the loaded map
+    global_key_map: Dict[str, KeyInfo],  # Pass the loaded map
 ) -> Dict[Tuple[str, str], Tuple[str, Set[str]]]:
     """
     Reads all specified tracker files and aggregates dependencies.
@@ -112,14 +151,14 @@ def _aggregate_all_dependencies(
                    Origin set contains paths of trackers where this link (with this char or lower priority) was found.
     """
     aggregated_links: Dict[Tuple[str, str], Tuple[str, Set[str]]] = {}
-    config = ConfigManager() # Needed for priority
+    config = ConfigManager()  # Needed for priority
     get_priority = config.get_char_priority
 
     logger.info(f"Aggregating dependencies from {len(tracker_paths)} trackers...")
 
     for tracker_path in tracker_paths:
         logger.debug(f"Processing tracker for aggregation: {os.path.basename(tracker_path)}")
-        tracker_data = read_tracker_file(tracker_path) # Uses cache
+        tracker_data = read_tracker_file(tracker_path)  # Uses cache
         if not tracker_data or not tracker_data.get("keys") or not tracker_data.get("grid"):
             logger.debug(f"Skipping empty or invalid tracker: {os.path.basename(tracker_path)}")
             continue
@@ -128,20 +167,25 @@ def _aggregate_all_dependencies(
         grid = tracker_data["grid"]
         # Use hierarchical sort for reliable indexing
         sorted_keys_local = sort_key_strings_hierarchically(list(local_keys_map.keys()))
-        key_to_idx_local = {k: i for i, k in enumerate(sorted_keys_local)} # Not strictly needed for this simplified extraction
+        key_to_idx_local = {
+            k: i for i, k in enumerate(sorted_keys_local)
+        }  # Not strictly needed for this simplified extraction
 
         # Extract raw links directly from grid data
         for row_key in sorted_keys_local:
             compressed_row = grid.get(row_key)
-            if not compressed_row: continue
+            if not compressed_row:
+                continue
             try:
                 decompressed_row = decompress(compressed_row)
-                if len(decompressed_row) != len(sorted_keys_local): continue # Skip malformed rows
+                if len(decompressed_row) != len(sorted_keys_local):
+                    continue  # Skip malformed rows
 
                 for col_idx, dep_char in enumerate(decompressed_row):
                     col_key = sorted_keys_local[col_idx]
                     # Skip diagonal, no-dependency, empty
-                    if row_key == col_key or dep_char in ('o', 'n', '-', 'X'): continue
+                    if row_key == col_key or dep_char in ("o", "n", "-", "X"):
+                        continue
 
                     # --- Priority Resolution and Origin Tracking ---
                     current_link = (row_key, col_key)
@@ -149,10 +193,14 @@ def _aggregate_all_dependencies(
 
                     try:
                         current_priority = get_priority(dep_char)
-                        existing_priority = get_priority(existing_char) if existing_char else -1 # Assign lowest priority if non-existent
+                        existing_priority = (
+                            get_priority(existing_char) if existing_char else -1
+                        )  # Assign lowest priority if non-existent
                     except KeyError as e:
-                         logger.warning(f"Invalid dependency character '{str(e)}' found in {tracker_path} for {row_key}->{col_key}. Skipping.")
-                         continue
+                        logger.warning(
+                            f"Invalid dependency character '{str(e)}' found in {tracker_path} for {row_key}->{col_key}. Skipping."
+                        )
+                        continue
 
                     if current_priority > existing_priority:
                         # New char has higher priority, replace char and reset origins
@@ -164,10 +212,13 @@ def _aggregate_all_dependencies(
                     # else: Lower priority, do nothing
 
             except Exception as e:
-                logger.warning(f"Aggregation: Error processing row '{row_key}' in {os.path.basename(tracker_path)}: {e}")
+                logger.warning(
+                    f"Aggregation: Error processing row '{row_key}' in {os.path.basename(tracker_path)}: {e}"
+                )
 
     logger.info(f"Aggregation complete. Found {len(aggregated_links)} unique directed links.")
     return aggregated_links
+
 
 # <<< NEW HELPER FUNCTION: Check Parent/Child Relationship >>>
 def is_parent_child(key1_str: str, key2_str: str, global_map: Dict[str, KeyInfo]) -> bool:
@@ -177,8 +228,10 @@ def is_parent_child(key1_str: str, key2_str: str, global_map: Dict[str, KeyInfo]
     info2 = next((info for path, info in global_map.items() if info.key_string == key2_str), None)
 
     if not info1 or not info2:
-        logger.debug(f"is_parent_child: Could not find KeyInfo for '{key1_str if not info1 else ''}' or '{key2_str if not info2 else ''}'. Returning False.")
-        return False # Cannot determine relationship if info is missing
+        logger.debug(
+            f"is_parent_child: Could not find KeyInfo for '{key1_str if not info1 else ''}' or '{key2_str if not info2 else ''}'. Returning False."
+        )
+        return False  # Cannot determine relationship if info is missing
 
     # Ensure paths are normalized (they should be from KeyInfo, but double-check)
     path1 = normalize_path(info1.norm_path)
@@ -190,95 +243,175 @@ def is_parent_child(key1_str: str, key2_str: str, global_map: Dict[str, KeyInfo]
     is_parent1 = parent2 == path1
     is_parent2 = parent1 == path2
 
-    logger.debug(f"is_parent_child check: {key1_str}({path1}) vs {key2_str}({path2}). Is Parent1: {is_parent1}, Is Parent2: {is_parent2}")
+    logger.debug(
+        f"is_parent_child check: {key1_str}({path1}) vs {key2_str}({path2}). Is Parent1: {is_parent1}, Is Parent2: {is_parent2}"
+    )
     return is_parent1 or is_parent2
 
+
 # --- Command Handlers ---
+
 
 def command_handler_analyze_file(args):
     """Handle the analyze-file command."""
     import json
+
     try:
-        if not os.path.exists(args.file_path): print(f"Error: File not found: {args.file_path}"); return 1
+        if not os.path.exists(args.file_path):
+            print(f"Error: File not found: {args.file_path}")
+            return 1
         results = analyze_file(args.file_path)
         if args.output:
-            output_dir = os.path.dirname(args.output); os.makedirs(output_dir, exist_ok=True) if output_dir else None
-            with open(args.output, 'w', encoding='utf-8') as f: json.dump(results, f, indent=2)
+            output_dir = os.path.dirname(args.output)
+            os.makedirs(output_dir, exist_ok=True) if output_dir else None
+            with open(args.output, "w", encoding="utf-8") as f:
+                json.dump(results, f, indent=2)
             print(f"Analysis results saved to {args.output}")
-        else: print(json.dumps(results, indent=2))
+        else:
+            print(json.dumps(results, indent=2))
         return 0
-    except Exception as e: print(f"Error analyzing file: {str(e)}"); return 1
+    except Exception as e:
+        print(f"Error analyzing file: {str(e)}")
+        return 1
+
 
 def command_handler_analyze_project(args):
     """Handle the analyze-project command."""
     import json
+
     try:
-        if not args.project_root: args.project_root = "."; logger.info(f"Defaulting project root to CWD: {os.path.abspath(args.project_root)}")
+        if not args.project_root:
+            args.project_root = "."
+            logger.info(f"Defaulting project root to CWD: {os.path.abspath(args.project_root)}")
         abs_project_root = normalize_path(os.path.abspath(args.project_root))
-        if not os.path.isdir(abs_project_root): print(f"Error: Project directory not found: {abs_project_root}"); return 1
+        if not os.path.isdir(abs_project_root):
+            print(f"Error: Project directory not found: {abs_project_root}")
+            return 1
         original_cwd = os.getcwd()
         if abs_project_root != normalize_path(original_cwd):
-             logger.info(f"Changing CWD to: {abs_project_root}"); os.chdir(abs_project_root)
-             # ConfigManager.initialize(force=True) # Re-init if CWD matters for config finding
+            logger.info(f"Changing CWD to: {abs_project_root}")
+            os.chdir(abs_project_root)
+            # ConfigManager.initialize(force=True) # Re-init if CWD matters for config finding
 
-        logger.debug(f"Analyzing project: {abs_project_root}, force_analysis={args.force_analysis}, force_embeddings={args.force_embeddings}")
+        logger.debug(
+            f"Analyzing project: {abs_project_root}, force_analysis={args.force_analysis}, force_embeddings={args.force_embeddings}"
+        )
         results = analyze_project(force_analysis=args.force_analysis, force_embeddings=args.force_embeddings)
-        logger.debug(f"All Suggestions before Tracker Update: {results.get('dependency_suggestion', {}).get('suggestions')}")
+        logger.debug(
+            f"All Suggestions before Tracker Update: {results.get('dependency_suggestion', {}).get('suggestions')}"
+        )
 
         if args.output:
             output_path_abs = normalize_path(os.path.abspath(args.output))
-            output_dir = os.path.dirname(output_path_abs); os.makedirs(output_dir, exist_ok=True) if output_dir else None
-            with open(output_path_abs, 'w', encoding='utf-8') as f: json.dump(results, f, indent=2)
+            output_dir = os.path.dirname(output_path_abs)
+            os.makedirs(output_dir, exist_ok=True) if output_dir else None
+            with open(output_path_abs, "w", encoding="utf-8") as f:
+                json.dump(results, f, indent=2)
             print(f"Analysis results saved to {output_path_abs}")
-        else: print("Analysis complete. Results not printed (use --output to save).")
+        else:
+            print("Analysis complete. Results not printed (use --output to save).")
         return 0
     except Exception as e:
-        logger.error(f"Error analyzing project: {str(e)}", exc_info=True); print(f"Error analyzing project: {str(e)}"); return 1
+        logger.error(f"Error analyzing project: {str(e)}", exc_info=True)
+        print(f"Error analyzing project: {str(e)}")
+        return 1
     finally:
-        if 'original_cwd' in locals() and normalize_path(os.getcwd()) != normalize_path(original_cwd):
-             logger.info(f"Changing CWD back to: {original_cwd}"); os.chdir(original_cwd)
-             # ConfigManager.initialize(force=True) # Re-init if needed
+        if "original_cwd" in locals() and normalize_path(os.getcwd()) != normalize_path(original_cwd):
+            logger.info(f"Changing CWD back to: {original_cwd}")
+            os.chdir(original_cwd)
+            # ConfigManager.initialize(force=True) # Re-init if needed
+
 
 def handle_compress(args: argparse.Namespace) -> int:
     """Handle the compress command."""
-    try: result = compress(args.string); print(f"Compressed string: {result}"); return 0
-    except Exception as e: logger.error(f"Error compressing: {e}"); print(f"Error: {e}"); return 1
+    try:
+        result = compress(args.string)
+        print(f"Compressed string: {result}")
+        return 0
+    except Exception as e:
+        logger.error(f"Error compressing: {e}")
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_decompress(args: argparse.Namespace) -> int:
     """Handle the decompress command."""
-    try: result = decompress(args.string); print(f"Decompressed string: {result}"); return 0
-    except Exception as e: logger.error(f"Error decompressing: {e}"); print(f"Error: {e}"); return 1
+    try:
+        result = decompress(args.string)
+        print(f"Decompressed string: {result}")
+        return 0
+    except Exception as e:
+        logger.error(f"Error decompressing: {e}")
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_get_char(args: argparse.Namespace) -> int:
     """Handle the get_char command."""
-    try: result = get_char_at(args.string, args.index); print(f"Character at index {args.index}: {result}"); return 0
-    except IndexError: logger.error("Index out of range"); print("Error: Index out of range"); return 1
-    except Exception as e: logger.error(f"Error get_char: {e}"); print(f"Error: {e}"); return 1
+    try:
+        result = get_char_at(args.string, args.index)
+        print(f"Character at index {args.index}: {result}")
+        return 0
+    except IndexError:
+        logger.error("Index out of range")
+        print("Error: Index out of range")
+        return 1
+    except Exception as e:
+        logger.error(f"Error get_char: {e}")
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_set_char(args: argparse.Namespace) -> int:
     """Handle the set_char command."""
     try:
         tracker_data = read_tracker_file(args.tracker_file)
-        if not tracker_data or not tracker_data.get("keys"): print(f"Error: Could not read tracker: {args.tracker_file}"); return 1
-        if args.key not in tracker_data["keys"]: print(f"Error: Key {args.key} not found"); return 1
-        sorted_keys = sort_key_strings_hierarchically(list(tracker_data["keys"].keys())) # Use hierarchical sort
+        if not tracker_data or not tracker_data.get("keys"):
+            print(f"Error: Could not read tracker: {args.tracker_file}")
+            return 1
+        if args.key not in tracker_data["keys"]:
+            print(f"Error: Key {args.key} not found")
+            return 1
+        sorted_keys = sort_key_strings_hierarchically(list(tracker_data["keys"].keys()))  # Use hierarchical sort
         # Check index validity against sorted list length
-        if not (0 <= args.index < len(sorted_keys)): print(f"Error: Index {args.index} out of range for {len(sorted_keys)} keys."); return 1
+        if not (0 <= args.index < len(sorted_keys)):
+            print(f"Error: Index {args.index} out of range for {len(sorted_keys)} keys.")
+            return 1
         # Check char validity (optional, could rely on set_char_at)
         # if len(args.char) != 1: print("Error: Character must be a single character."); return 1
 
         row_str = tracker_data["grid"].get(args.key, "")
-        if not row_str: logger.warning(f"Row for key '{args.key}' missing. Initializing."); row_str = compress('p' * len(sorted_keys))
+        if not row_str:
+            logger.warning(f"Row for key '{args.key}' missing. Initializing.")
+            row_str = compress("p" * len(sorted_keys))
 
         updated_compressed_row = set_char_at(row_str, args.index, args.char)
         tracker_data["grid"][args.key] = updated_compressed_row
         tracker_data["last_grid_edit"] = f"Set {args.key}[{args.index}] to {args.char}"
-        success = write_tracker_file(args.tracker_file, tracker_data["keys"], tracker_data["grid"], tracker_data.get("last_key_edit", ""), tracker_data["last_grid_edit"])
-        if success: print(f"Set char at index {args.index} to '{args.char}' for key {args.key} in {args.tracker_file}"); return 0
-        else: print(f"Error: Failed write to {args.tracker_file}"); return 1
-    except IndexError: print(f"Error: Index {args.index} out of range."); return 1
-    except ValueError as e: print(f"Error: {e}"); return 1
-    except Exception as e: logger.error(f"Error set_char: {e}", exc_info=True); print(f"Error: {e}"); return 1
+        success = write_tracker_file(
+            args.tracker_file,
+            tracker_data["keys"],
+            tracker_data["grid"],
+            tracker_data.get("last_key_edit", ""),
+            tracker_data["last_grid_edit"],
+        )
+        if success:
+            print(f"Set char at index {args.index} to '{args.char}' for key {args.key} in {args.tracker_file}")
+            return 0
+        else:
+            print(f"Error: Failed write to {args.tracker_file}")
+            return 1
+    except IndexError:
+        print(f"Error: Index {args.index} out of range.")
+        return 1
+    except ValueError as e:
+        print(f"Error: {e}")
+        return 1
+    except Exception as e:
+        logger.error(f"Error set_char: {e}", exc_info=True)
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_remove_key(args: argparse.Namespace) -> int:
     """Handle the remove-key command."""
@@ -287,24 +420,33 @@ def handle_remove_key(args: argparse.Namespace) -> int:
         remove_key_from_tracker(args.tracker_file, args.key)
         print(f"Removed key '{args.key}' from tracker '{args.tracker_file}'")
         # Invalidate cache for the modified tracker
-        invalidate_dependent_entries('tracker_data', f"tracker_data:{normalize_path(args.tracker_file)}:.*")
+        invalidate_dependent_entries("tracker_data", f"tracker_data:{normalize_path(args.tracker_file)}:.*")
         # Broader invalidation might be needed if other caches depend on grid structure
-        invalidate_dependent_entries('grid_decompress', '.*'); invalidate_dependent_entries('grid_validation', '.*'); invalidate_dependent_entries('grid_dependencies', '.*')
+        invalidate_dependent_entries("grid_decompress", ".*")
+        invalidate_dependent_entries("grid_validation", ".*")
+        invalidate_dependent_entries("grid_dependencies", ".*")
         return 0
-    except FileNotFoundError as e: print(f"Error: {e}"); return 1
-    except ValueError as e: print(f"Error: {e}"); return 1 # e.g., key not found in tracker
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return 1
+    except ValueError as e:
+        print(f"Error: {e}")
+        return 1  # e.g., key not found in tracker
     except Exception as e:
-        logger.error(f"Failed to remove key: {str(e)}", exc_info=True); print(f"Error: {e}"); return 1
+        logger.error(f"Failed to remove key: {str(e)}", exc_info=True)
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_add_dependency(args: argparse.Namespace) -> int:
     """Handle the add-dependency command. Allows adding foreign keys to mini-trackers."""
     tracker_path = normalize_path(args.tracker)
     is_mini_tracker = tracker_path.endswith("_module.md")
     source_key = args.source_key
-    target_keys = args.target_key # This is a list
+    target_keys = args.target_key  # This is a list
     dep_type = args.dep_type
     # Dependency type validation
-    ALLOWED_DEP_TYPES = {'<', '>', 'x', 'd', 'o', 'n', 'p', 's', 'S'}
+    ALLOWED_DEP_TYPES = {"<", ">", "x", "d", "o", "n", "p", "s", "S"}
 
     logger.info(f"Attempting to add dependency: {source_key} -> {target_keys} ({dep_type}) in tracker {tracker_path}")
 
@@ -321,16 +463,17 @@ def handle_add_dependency(args: argparse.Namespace) -> int:
         if not is_mini_tracker:
             return 1
         else:
-            logger.warning(f"Mini-tracker {tracker_path} not found or invalid, proceeding to update_tracker for potential creation.")
+            logger.warning(
+                f"Mini-tracker {tracker_path} not found or invalid, proceeding to update_tracker for potential creation."
+            )
             # Allow proceeding, update_tracker handles creation
             local_keys = {}
             local_grid = {}
             local_sorted_keys = []
     else:
-        local_keys = tracker_data.get("keys", {}) # key_string -> path_string map
+        local_keys = tracker_data.get("keys", {})  # key_string -> path_string map
         local_grid = tracker_data.get("grid", {})
         local_sorted_keys = sort_key_strings_hierarchically(list(local_keys.keys()))
-
 
     # --- Validate Source Key Locally (if tracker exists) ---
     if local_keys and source_key not in local_keys:
@@ -338,15 +481,15 @@ def handle_add_dependency(args: argparse.Namespace) -> int:
         return 1
 
     # --- Process Target Keys ---
-    internal_changes = [] # List of (target_key, dep_type) for local targets
-    foreign_adds = []     # List of (target_key, dep_type) for valid foreign targets (mini-trackers only)
+    internal_changes = []  # List of (target_key, dep_type) for local targets
+    foreign_adds = []  # List of (target_key, dep_type) for valid foreign targets (mini-trackers only)
     global_map_loaded = False
     global_path_to_key_info = None
 
     for target_key in target_keys:
         if target_key == source_key:
-             logger.warning(f"Skipping self-dependency: {source_key} -> {target_key}")
-             continue
+            logger.warning(f"Skipping self-dependency: {source_key} -> {target_key}")
+            continue
 
         if target_key in local_keys:
             # Target exists locally, treat as internal change
@@ -358,7 +501,7 @@ def handle_add_dependency(args: argparse.Namespace) -> int:
             if not global_map_loaded:
                 # <<< USE UTILITY >>>
                 global_path_to_key_info = _load_global_map_or_exit()
-                global_map_loaded = True # Mark as loaded
+                global_map_loaded = True  # Mark as loaded
 
             # Check existence using the loaded map
             target_exists_globally = any(info.key_string == target_key for info in global_path_to_key_info.values())
@@ -368,20 +511,21 @@ def handle_add_dependency(args: argparse.Namespace) -> int:
             else:
                 print(f"Error: Target key '{target_key}' not found locally or globally. Cannot add dependency.")
                 # Decide if we should stop entirely or just skip this target
-                return 1 # Stop on first invalid target key
+                return 1  # Stop on first invalid target key
         else:
             # Target missing locally and it's NOT a mini-tracker - standard error
             print(f"Error: Target key '{target_key}' not found in tracker '{tracker_path}'.")
-            return 1 # Stop on first invalid target key
+            return 1  # Stop on first invalid target key
 
     # --- Combine all changes ---
     all_targets_for_source = internal_changes + foreign_adds
     if not all_targets_for_source:
-        print("No valid dependencies specified or identified."); return 0
+        print("No valid dependencies specified or identified.")
+        return 0
 
     # --- Prepare data for update_tracker ---
     suggestions_for_update = {source_key: all_targets_for_source}
-    force_apply = True # Always force apply from add-dependency
+    force_apply = True  # Always force apply from add-dependency
 
     # Load global map if not already loaded (needed for file_to_module)
     if not global_map_loaded:
@@ -389,20 +533,24 @@ def handle_add_dependency(args: argparse.Namespace) -> int:
         global_path_to_key_info = _load_global_map_or_exit()
 
     # Generate file_to_module map (needed by update_tracker even if no foreign keys added this time)
-    file_to_module_map = {info.norm_path: info.parent_path for info in global_path_to_key_info.values() if not info.is_directory and info.parent_path}
+    file_to_module_map = {
+        info.norm_path: info.parent_path
+        for info in global_path_to_key_info.values()
+        if not info.is_directory and info.parent_path
+    }
 
     # --- Call update_tracker for ALL cases (mini, main, doc) ---
     # Let update_tracker handle type determination, reading, writing, content preservation
     try:
         logger.info(f"Calling update_tracker for {tracker_path} (Force Apply: {force_apply})")
         update_tracker(
-            output_file_suggestion=tracker_path, # Pass path for context/determination
+            output_file_suggestion=tracker_path,  # Pass path for context/determination
             path_to_key_info=global_path_to_key_info,
             tracker_type="mini" if is_mini_tracker else ("doc" if "doc_tracker.md" in tracker_path else "main"),
             suggestions=suggestions_for_update,
             file_to_module=file_to_module_map,
-            new_keys=None, # add-dependency doesn't introduce globally new keys
-            force_apply_suggestions=force_apply
+            new_keys=None,  # add-dependency doesn't introduce globally new keys
+            force_apply_suggestions=force_apply,
         )
         print(f"Successfully updated tracker {tracker_path} with dependencies.")
         return 0
@@ -411,15 +559,25 @@ def handle_add_dependency(args: argparse.Namespace) -> int:
         print(f"Error updating tracker {tracker_path}: {e}")
         return 1
 
+
 def handle_merge_trackers(args: argparse.Namespace) -> int:
     """Handle the merge-trackers command."""
     try:
-        primary_tracker_path = normalize_path(args.primary_tracker_path); secondary_tracker_path = normalize_path(args.secondary_tracker_path)
+        primary_tracker_path = normalize_path(args.primary_tracker_path)
+        secondary_tracker_path = normalize_path(args.secondary_tracker_path)
         output_path = normalize_path(args.output) if args.output else primary_tracker_path
         merged_data = merge_trackers(primary_tracker_path, secondary_tracker_path, output_path)
-        if merged_data: print(f"Merged trackers: ... into {output_path}. Total keys: {len(merged_data.get('keys', {}))}"); return 0
-        else: print("Error merging trackers."); return 1 # merge_trackers logs errors
-    except Exception as e: logger.exception(f"Failed merge: {e}"); print(f"Error: {e}"); return 1
+        if merged_data:
+            print(f"Merged trackers: ... into {output_path}. Total keys: {len(merged_data.get('keys', {}))}")
+            return 0
+        else:
+            print("Error merging trackers.")
+            return 1  # merge_trackers logs errors
+    except Exception as e:
+        logger.exception(f"Failed merge: {e}")
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_clear_caches(args: argparse.Namespace) -> int:
     """Handle the clear-caches command."""
@@ -432,36 +590,61 @@ def handle_clear_caches(args: argparse.Namespace) -> int:
         print(f"Error clearing caches: {e}")
         return 1
 
+
 def handle_export_tracker(args: argparse.Namespace) -> int:
     """Handle the export-tracker command."""
     try:
-        output_path = args.output or os.path.splitext(args.tracker_file)[0] + '.' + args.format
+        output_path = args.output or os.path.splitext(args.tracker_file)[0] + "." + args.format
         result = export_tracker(args.tracker_file, args.format, output_path)
-        if isinstance(result, str) and result.startswith("Error:"): # Check if export returned an error string
-            print(result); return 1
-        print(f"Tracker exported to {output_path}"); return 0
-    except Exception as e: logger.exception(f"Error export_tracker: {e}"); print(f"Error: {e}"); return 1
+        if isinstance(result, str) and result.startswith("Error:"):  # Check if export returned an error string
+            print(result)
+            return 1
+        print(f"Tracker exported to {output_path}")
+        return 0
+    except Exception as e:
+        logger.exception(f"Error export_tracker: {e}")
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_update_config(args: argparse.Namespace) -> int:
     """Handle the update-config command."""
     config_manager = ConfigManager()
     try:
         # Attempt to parse value as JSON (allows lists/dicts), fall back to string
-        try: value = json.loads(args.value)
-        except json.JSONDecodeError: value = args.value
+        try:
+            value = json.loads(args.value)
+        except json.JSONDecodeError:
+            value = args.value
         success = config_manager.update_config_setting(args.key, value)
-        if success: print(f"Updated config: {args.key} = {value}"); return 0
-        else: print(f"Error: Failed update config (key '{args.key}' invalid?)."); return 1
-    except Exception as e: logger.exception(f"Error update_config: {e}"); print(f"Error: {e}"); return 1
+        if success:
+            print(f"Updated config: {args.key} = {value}")
+            return 0
+        else:
+            print(f"Error: Failed update config (key '{args.key}' invalid?).")
+            return 1
+    except Exception as e:
+        logger.exception(f"Error update_config: {e}")
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_reset_config(args: argparse.Namespace) -> int:
     """Handle the reset-config command."""
     config_manager = ConfigManager()
     try:
         success = config_manager.reset_to_defaults()
-        if success: print("Config reset to defaults."); return 0
-        else: print("Error: Failed reset config."); return 1
-    except Exception as e: logger.exception(f"Error reset_config: {e}"); print(f"Error: {e}"); return 1
+        if success:
+            print("Config reset to defaults.")
+            return 0
+        else:
+            print("Error: Failed reset config.")
+            return 1
+    except Exception as e:
+        logger.exception(f"Error reset_config: {e}")
+        print(f"Error: {e}")
+        return 1
+
 
 def handle_show_dependencies(args: argparse.Namespace) -> int:
     """Handle the show-dependencies command using the contextual key system."""
@@ -470,7 +653,7 @@ def handle_show_dependencies(args: argparse.Namespace) -> int:
 
     # <<< USE UTILITY >>>
     path_to_key_info = _load_global_map_or_exit()
-   
+
     config = ConfigManager()
     project_root = get_project_root()
 
@@ -483,8 +666,8 @@ def handle_show_dependencies(args: argparse.Namespace) -> int:
     if len(matching_infos) > 1:
         print(f"Warning: Key string '{target_key_str}' is ambiguous and matches multiple paths:")
         for i, info in enumerate(matching_infos):
-            print(f"  [{i+1}] {info.norm_path}")
-        target_info = matching_infos[0] # Use the first match
+            print(f"  [{i + 1}] {info.norm_path}")
+        target_info = matching_infos[0]  # Use the first match
         print(f"Using the first match: {target_info.norm_path}")
     else:
         target_info = matching_infos[0]
@@ -493,29 +676,33 @@ def handle_show_dependencies(args: argparse.Namespace) -> int:
 
     # --- Use Utility Functions ---
     all_tracker_paths = _find_all_tracker_paths(config, project_root)
-    if not all_tracker_paths: print("Warning: No tracker files found.")
+    if not all_tracker_paths:
+        print("Warning: No tracker files found.")
 
     aggregated_links_with_origins = _aggregate_all_dependencies(all_tracker_paths, path_to_key_info)
     # --- End Use Utility Functions ---
 
     # --- Process Aggregated Results for Display ---
-    all_dependencies_by_type = defaultdict(set) # Store sets of (dep_key_string, dep_path_string) tuples
-    origin_tracker_map_display = defaultdict(lambda: defaultdict(set)) # For p/s/S origins
+    all_dependencies_by_type = defaultdict(set)  # Store sets of (dep_key_string, dep_path_string) tuples
+    origin_tracker_map_display = defaultdict(lambda: defaultdict(set))  # For p/s/S origins
 
     logger.debug(f"Filtering aggregated links for target key display: {target_key_str}")
     for (source, target), (dep_char, origins) in aggregated_links_with_origins.items():
         dep_key_str = None
-        display_char = dep_char # Character used to categorize for display
+        display_char = dep_char  # Character used to categorize for display
 
         if source == target_key_str:
-            dep_key_str = target # Target is the dependency shown
+            dep_key_str = target  # Target is the dependency shown
         elif target == target_key_str:
-            dep_key_str = source # Source is the dependency shown
+            dep_key_str = source  # Source is the dependency shown
             # Adjust display category based on relationship direction relative to target
-            if dep_char == '>': display_char = '<' # Target depends on Source (show Source in Depends On)
-            elif dep_char == '<': display_char = '>' # Source depends on Target (show Source in Depended On By)
+            if dep_char == ">":
+                display_char = "<"  # Target depends on Source (show Source in Depends On)
+            elif dep_char == "<":
+                display_char = ">"  # Source depends on Target (show Source in Depended On By)
             # 'x', 'd', 's', 'S' remain the same category regardless of direction
-            else: display_char = dep_char
+            else:
+                display_char = dep_char
 
         if dep_key_str:
             # Find path for the dependency key
@@ -526,14 +713,18 @@ def handle_show_dependencies(args: argparse.Namespace) -> int:
             all_dependencies_by_type[display_char].add((dep_key_str, dep_path_str))
 
             # Track origins specifically for p/s/S if needed for display
-            if display_char in ('p', 's', 'S'):
+            if display_char in ("p", "s", "S"):
                 origin_tracker_map_display[display_char][dep_key_str].update(origins)
 
     # --- Print results ---
     output_sections = [
-        ("Mutual ('x')", 'x'), ("Documentation ('d')", 'd'), ("Semantic (Strong) ('S')", 'S'),
-        ("Semantic (Weak) ('s')", 's'), ("Depends On ('<')", '<'), ("Depended On By ('>')", '>'),
-        ("Placeholders ('p')", 'p')
+        ("Mutual ('x')", "x"),
+        ("Documentation ('d')", "d"),
+        ("Semantic (Strong) ('S')", "S"),
+        ("Semantic (Weak) ('s')", "s"),
+        ("Depends On ('<')", "<"),
+        ("Depended On By ('>')", ">"),
+        ("Placeholders ('p')", "p"),
     ]
     for section_title, dep_char in output_sections:
         print(f"\n{section_title}:")
@@ -541,13 +732,15 @@ def handle_show_dependencies(args: argparse.Namespace) -> int:
         if dep_set:
             # Define helper for hierarchical sorting
             def _hierarchical_sort_key_func(key_str: str):
-                import re # Import re locally if not globally available
-                KEY_PATTERN = r'\d+|\D+' # Pattern from key_manager
-                if not key_str or not isinstance(key_str, str): return []
+                import re  # Import re locally if not globally available
+
+                KEY_PATTERN = r"\d+|\D+"  # Pattern from key_manager
+                if not key_str or not isinstance(key_str, str):
+                    return []
                 parts = re.findall(KEY_PATTERN, key_str)
                 try:
                     return [(int(p) if p.isdigit() else p) for p in parts]
-                except (ValueError, TypeError): # Fallback
+                except (ValueError, TypeError):  # Fallback
                     logger.warning(f"Could not convert parts for sorting display key '{key_str}'")
                     return parts
 
@@ -556,7 +749,7 @@ def handle_show_dependencies(args: argparse.Namespace) -> int:
             for dep_key, dep_path in sorted_deps:
                 # Check for and add origin info for p/s/S
                 origin_info = ""
-                if dep_char in ('p', 's', 'S'):
+                if dep_char in ("p", "s", "S"):
                     origins = origin_tracker_map_display.get(dep_char, {}).get(dep_key, set())
                     if origins:
                         # Format origin filenames nicely
@@ -564,9 +757,11 @@ def handle_show_dependencies(args: argparse.Namespace) -> int:
                         origin_info = f" (In: {', '.join(origin_filenames)})"
                 # Print with optional origin info
                 print(f"  - {dep_key}: {dep_path}{origin_info}")
-        else: print("  None")
+        else:
+            print("  None")
     print("\n------------------------------------------")
     return 0
+
 
 def handle_show_keys(args: argparse.Namespace) -> int:
     """
@@ -585,7 +780,7 @@ def handle_show_keys(args: argparse.Namespace) -> int:
         return 1
 
     try:
-        tracker_data = read_tracker_file(tracker_path) # Use cached read
+        tracker_data = read_tracker_file(tracker_path)  # Use cached read
         if not tracker_data:
             # read_tracker_file already logs errors if parsing fails
             print(f"Error: Could not read or parse tracker file: {tracker_path}", file=sys.stderr)
@@ -600,36 +795,39 @@ def handle_show_keys(args: argparse.Namespace) -> int:
             # Allow proceeding if grid is missing, but warn
             if not grid_map:
                 logger.warning(f"Grid data also missing in {tracker_path}")
-            return 1 # Considered an error state if keys are missing
+            return 1  # Considered an error state if keys are missing
 
         # Sort keys hierarchically for consistent output
         sorted_keys = sort_key_strings_hierarchically(list(keys_map.keys()))
-        print(f"--- Keys Defined in {os.path.basename(tracker_path)} ---") # Header for clarity
+        print(f"--- Keys Defined in {os.path.basename(tracker_path)} ---")  # Header for clarity
 
         for key_string in sorted_keys:
             file_path = keys_map.get(key_string, "PATH_UNKNOWN")
-            check_indicator = "" # Renamed for clarity
+            check_indicator = ""  # Renamed for clarity
 
             # Check the grid for 'p', 's', or 'S' *only if* the grid exists
             if grid_map:
                 compressed_row = grid_map.get(key_string, "")
-                if compressed_row: # Check if the row string exists and is not empty
+                if compressed_row:  # Check if the row string exists and is not empty
                     found_chars = []
                     # Check for each character efficiently using 'in'. This is safe
                     # as 'p', 's', 'S' won't appear in RLE counts (which are digits).
-                    if 'p' in compressed_row: found_chars.append('p')
-                    if 's' in compressed_row: found_chars.append('s')
-                    if 'S' in compressed_row: found_chars.append('S')
+                    if "p" in compressed_row:
+                        found_chars.append("p")
+                    if "s" in compressed_row:
+                        found_chars.append("s")
+                    if "S" in compressed_row:
+                        found_chars.append("S")
                     if found_chars:
                         # Sort for consistent output order (e.g., p, s, S)
                         sorted_chars = sorted(found_chars)
                         chars_str = ", ".join(sorted_chars)
-                        check_indicator = f" (checks needed: {chars_str})" # Updated indicator format
+                        check_indicator = f" (checks needed: {chars_str})"  # Updated indicator format
                 else:
                     # Indicate if a key exists but has no corresponding grid row yet
                     check_indicator = " (grid row missing)"
                     logger.warning(f"Key '{key_string}' found in definitions but missing from grid in {tracker_path}")
-            else: # Grid is missing entirely
+            else:  # Grid is missing entirely
                 check_indicator = " (grid missing)"
 
             # Print the key, path, and the indicator (if any checks are needed or row is missing)
@@ -639,17 +837,16 @@ def handle_show_keys(args: argparse.Namespace) -> int:
 
         # Optional: Check for raw markers for debugging/completeness, but don't rely on them for key extraction
         try:
-            with open(tracker_path, 'r', encoding='utf-8') as f_check:
+            with open(tracker_path, "r", encoding="utf-8") as f_check:
                 content = f_check.read()
                 if KEY_DEFINITIONS_START_MARKER not in content:
-                     logger.warning(f"Start marker '{KEY_DEFINITIONS_START_MARKER}' not found in {tracker_path}")
+                    logger.warning(f"Start marker '{KEY_DEFINITIONS_START_MARKER}' not found in {tracker_path}")
                 if KEY_DEFINITIONS_END_MARKER not in content:
-                     logger.warning(f"End marker '{KEY_DEFINITIONS_END_MARKER}' not found in {tracker_path}")
+                    logger.warning(f"End marker '{KEY_DEFINITIONS_END_MARKER}' not found in {tracker_path}")
         except Exception:
-             logger.warning(f"Could not perform marker check on {tracker_path}")
+            logger.warning(f"Could not perform marker check on {tracker_path}")
 
-
-        return 0 # Success
+        return 0  # Success
 
     except IOError as e:
         print(f"Error reading tracker file {tracker_path}: {e}", file=sys.stderr)
@@ -668,14 +865,17 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
     output_path_arg = args.output
 
     logger.info(f"Generating dependency visualization. Focus Key: {target_key_str or 'None'}, Format: {output_format}")
-    if output_format != "mermaid": print(f"Error: Only 'mermaid' format supported."); return 1
+    if output_format != "mermaid":
+        print(f"Error: Only 'mermaid' format supported.")
+        return 1
 
     # <<< USE UTILITY >>>
     global_path_to_key_info = _load_global_map_or_exit()
     config = ConfigManager()
     project_root = get_project_root()
     all_tracker_paths = _find_all_tracker_paths(config, project_root)
-    if not all_tracker_paths: print("Warning: No tracker files found.")
+    if not all_tracker_paths:
+        print("Warning: No tracker files found.")
 
     aggregated_links_with_origins = _aggregate_all_dependencies(all_tracker_paths, global_path_to_key_info)
     # Ignore origins for visualization, just need consolidated directed links
@@ -686,24 +886,27 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
     # --- Prepare Edges for Drawing (Handle Mutual vs. One-Way) ---
     final_edges_to_draw_step1 = []
     processed_pairs_final = set()
-    sorted_consolidated_items = sorted(consolidated_directed_links.items()) # Sort for determinism
+    sorted_consolidated_items = sorted(consolidated_directed_links.items())  # Sort for determinism
     temp_mutual_edges = []
-    temp_directional_map = {} # Store forward links temporarily
+    temp_directional_map = {}  # Store forward links temporarily
 
     # First pass: identify mutual/reciprocal links and store others
     for (source, target), forward_char in sorted_consolidated_items:
         pair = tuple(sorted((source, target)))
         reverse_char = consolidated_directed_links.get((target, source))
 
-        if forward_char == 'x' or reverse_char == 'x':
+        if forward_char == "x" or reverse_char == "x":
             if pair not in processed_pairs_final:
-                temp_mutual_edges.append((source, target, 'x')); processed_pairs_final.add(pair)
-        elif (forward_char == '>' and reverse_char == '<'):
-             if pair not in processed_pairs_final:
-                 temp_mutual_edges.append((source, target, '>')); processed_pairs_final.add(pair) # Store as Source depends on Target
-        elif (forward_char == '<' and reverse_char == '>'):
-             if pair not in processed_pairs_final:
-                 temp_mutual_edges.append((target, source, '>')); processed_pairs_final.add(pair) # Store as Target depends on Source
+                temp_mutual_edges.append((source, target, "x"))
+                processed_pairs_final.add(pair)
+        elif forward_char == ">" and reverse_char == "<":
+            if pair not in processed_pairs_final:
+                temp_mutual_edges.append((source, target, ">"))
+                processed_pairs_final.add(pair)  # Store as Source depends on Target
+        elif forward_char == "<" and reverse_char == ">":
+            if pair not in processed_pairs_final:
+                temp_mutual_edges.append((target, source, ">"))
+                processed_pairs_final.add(pair)  # Store as Target depends on Source
         else:
             # Store non-mutual, non-reciprocal links for second pass
             temp_directional_map[(source, target)] = forward_char
@@ -712,22 +915,29 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
     final_edges_to_draw_step1.extend(temp_mutual_edges)
     # Add remaining directional links if their pair wasn't processed
     for (source, target), char in temp_directional_map.items():
-         pair = tuple(sorted((source, target)))
-         if pair not in processed_pairs_final:
-              final_edges_to_draw_step1.append((source, target, char)); processed_pairs_final.add(pair)
+        pair = tuple(sorted((source, target)))
+        if pair not in processed_pairs_final:
+            final_edges_to_draw_step1.append((source, target, char))
+            processed_pairs_final.add(pair)
     logger.info(f"Prepared {len(final_edges_to_draw_step1)} intermediate edges for drawing.")
-
 
     # --- Filter by --key ---
     relevant_keys = set()
     if target_key_str:
-        target_info = next((info for info in global_path_to_key_info.values() if info.key_string == target_key_str), None)
-        if not target_info: print(f"Error: Focus key '{target_key_str}' not found."); return 1
+        target_info = next(
+            (info for info in global_path_to_key_info.values() if info.key_string == target_key_str), None
+        )
+        if not target_info:
+            print(f"Error: Focus key '{target_key_str}' not found.")
+            return 1
         print(f"Filtering visualization to focus on key: {target_key_str}")
-        edges_for_key = []; relevant_keys = {target_key_str}
+        edges_for_key = []
+        relevant_keys = {target_key_str}
         for k1, k2, char in final_edges_to_draw_step1:
             if k1 == target_key_str or k2 == target_key_str:
-                edges_for_key.append((k1, k2, char)); relevant_keys.add(k1); relevant_keys.add(k2)
+                edges_for_key.append((k1, k2, char))
+                relevant_keys.add(k1)
+                relevant_keys.add(k2)
         final_edges_to_draw_step2 = edges_for_key
         logger.info(f"Filtered to {len(final_edges_to_draw_step2)} edges and {len(relevant_keys)} keys.")
     else:
@@ -735,54 +945,75 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
         relevant_keys = {k for edge in final_edges_to_draw_step2 for k in edge[:2]}
         logger.info(f"Including all {len(relevant_keys)} keys involved in dependencies.")
 
-
     # --- Filter Edges (Structural x, File/Dir Types, Placeholders 'p') ---
     final_edges_to_draw = []
-    structural_removed = 0; type_mismatch_removed = 0; placeholder_removed = 0
-    key_string_to_info_map = {info.key_string: info for info in global_path_to_key_info.values()} # Cache lookup
+    structural_removed = 0
+    type_mismatch_removed = 0
+    placeholder_removed = 0
+    key_string_to_info_map = {info.key_string: info for info in global_path_to_key_info.values()}  # Cache lookup
 
     for k1, k2, char in final_edges_to_draw_step2:
         # Skip placeholders
-        if char == 'p': placeholder_removed += 1; continue
+        if char == "p":
+            placeholder_removed += 1
+            continue
         # Skip structural 'x'
-        if char == 'x' and is_parent_child(k1, k2, global_path_to_key_info): structural_removed += 1; continue
+        if char == "x" and is_parent_child(k1, k2, global_path_to_key_info):
+            structural_removed += 1
+            continue
         # Skip file-dir/dir-file mismatches
-        info1 = key_string_to_info_map.get(k1); info2 = key_string_to_info_map.get(k2)
-        if not info1 or not info2: continue # Skip if key info is missing
-        if info1.is_directory != info2.is_directory: type_mismatch_removed += 1; continue
+        info1 = key_string_to_info_map.get(k1)
+        info2 = key_string_to_info_map.get(k2)
+        if not info1 or not info2:
+            continue  # Skip if key info is missing
+        if info1.is_directory != info2.is_directory:
+            type_mismatch_removed += 1
+            continue
 
-        final_edges_to_draw.append((k1, k2, char)) # Keep the edge
+        final_edges_to_draw.append((k1, k2, char))  # Keep the edge
 
-    logger.info(f"Edges removed: Structural 'x'({structural_removed}), Type Mismatch({type_mismatch_removed}), Placeholders({placeholder_removed})")
+    logger.info(
+        f"Edges removed: Structural 'x'({structural_removed}), Type Mismatch({type_mismatch_removed}), Placeholders({placeholder_removed})"
+    )
     logger.info(f"Final count of edges to draw: {len(final_edges_to_draw)}")
 
     # --- Recalculate relevant keys, Build Hierarchy Map ---
     final_relevant_keys = {k for edge in final_edges_to_draw for k in edge[:2]}
-    if not final_relevant_keys: print("No relevant nodes or dependencies found to visualize."); return 0
+    if not final_relevant_keys:
+        print("No relevant nodes or dependencies found to visualize.")
+        return 0
     logger.info(f"Final count of nodes to draw: {len(final_relevant_keys)}")
 
     parent_to_children: Dict[Optional[str], List[KeyInfo]] = defaultdict(list)
     processed_nodes_for_hierarchy = set()
     key_string_to_info_map = {info.key_string: info for info in global_path_to_key_info.values()}
-    queue = list(final_relevant_keys); visited_for_hierarchy = set(final_relevant_keys)
+    queue = list(final_relevant_keys)
+    visited_for_hierarchy = set(final_relevant_keys)
     # BFS/DFS to find all necessary parent nodes for hierarchy structure
     while queue:
-        key_str = queue.pop(0); info = key_string_to_info_map.get(key_str)
-        if not info: continue
+        key_str = queue.pop(0)
+        info = key_string_to_info_map.get(key_str)
+        if not info:
+            continue
         processed_nodes_for_hierarchy.add(key_str)
         parent_path = normalize_path(info.parent_path) if info.parent_path else None
         parent_to_children[parent_path].append(info)
         if parent_path:
             parent_info = global_path_to_key_info.get(parent_path)
             if parent_info and parent_info.key_string not in visited_for_hierarchy:
-                visited_for_hierarchy.add(parent_info.key_string); queue.append(parent_info.key_string)
+                visited_for_hierarchy.add(parent_info.key_string)
+                queue.append(parent_info.key_string)
     # Ensure all keys needed for subgraphs and nodes are included
     all_keys_for_node_defs = final_relevant_keys.union(
-        {parent_info.key_string for path, children in parent_to_children.items() if path
-         for parent_info in [global_path_to_key_info.get(path)] if parent_info}
+        {
+            parent_info.key_string
+            for path, children in parent_to_children.items()
+            if path
+            for parent_info in [global_path_to_key_info.get(path)]
+            if parent_info
+        }
     )
     logger.debug(f"Total nodes required for definition (incl. parents): {len(all_keys_for_node_defs)}")
-
 
     # --- Generate Mermaid String ---
     mermaid_string = "flowchart TB\n\n"
@@ -797,32 +1028,33 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
         parent_info = global_path_to_key_info.get(parent_norm_path) if parent_norm_path else None
 
         # Determine indentation based on path depth (simple approximation)
-        indent = "  " * (parent_norm_path.count('/') if parent_norm_path else 0)
+        indent = "  " * (parent_norm_path.count("/") if parent_norm_path else 0)
         subgraph_declared = False
         if parent_info:
-             # Only declare subgraph if it or its children are needed
-             parent_key_str = parent_info.key_string
-             if parent_key_str in nodes_in_scope or any(child.key_string in nodes_in_scope for child in children):
-                 parent_basename = os.path.basename(parent_info.norm_path)
-                 mermaid_string += f'{indent}subgraph {parent_key_str} ["{parent_basename}"]\n'
-                 # Optional: Set direction within subgraph
-                 # mermaid_string += f'{indent}  direction LR\n'
-                 subgraph_declared = True
-                 # Define the subgraph node itself if it's relevant (e.g., has edges)
-                 # It might be better to define all nodes at the top level first?
-                 # For now, define within subgraph context.
-                 if parent_key_str not in defined_nodes and parent_key_str in nodes_in_scope:
-                     # Define the directory node itself if needed
-                     # node_label = f'{parent_key_str}<br>{parent_basename}'
-                     # mermaid_string += f'{indent}  {parent_key_str}(("{node_label}"))\n' # Example: circle for dir
-                     # defined_nodes.add(parent_key_str)
-                     pass # Let recursion handle sub-subgraphs first
+            # Only declare subgraph if it or its children are needed
+            parent_key_str = parent_info.key_string
+            if parent_key_str in nodes_in_scope or any(child.key_string in nodes_in_scope for child in children):
+                parent_basename = os.path.basename(parent_info.norm_path)
+                mermaid_string += f'{indent}subgraph {parent_key_str} ["{parent_basename}"]\n'
+                # Optional: Set direction within subgraph
+                # mermaid_string += f'{indent}  direction LR\n'
+                subgraph_declared = True
+                # Define the subgraph node itself if it's relevant (e.g., has edges)
+                # It might be better to define all nodes at the top level first?
+                # For now, define within subgraph context.
+                if parent_key_str not in defined_nodes and parent_key_str in nodes_in_scope:
+                    # Define the directory node itself if needed
+                    # node_label = f'{parent_key_str}<br>{parent_basename}'
+                    # mermaid_string += f'{indent}  {parent_key_str}(("{node_label}"))\n' # Example: circle for dir
+                    # defined_nodes.add(parent_key_str)
+                    pass  # Let recursion handle sub-subgraphs first
 
         # Process Children
         for child_info in children:
             child_key = child_info.key_string
             # Skip if node isn't relevant for the final viz OR already defined
-            if child_key not in nodes_in_scope or child_key in defined_nodes: continue
+            if child_key not in nodes_in_scope or child_key in defined_nodes:
+                continue
 
             child_path = child_info.norm_path
             child_basename = os.path.basename(child_path)
@@ -832,14 +1064,14 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
                 generate_mermaid_nodes_recursive(child_path, nodes_in_scope)
             else:
                 # Define file node
-                node_label = f'{child_key}<br>{child_basename}'
+                node_label = f"{child_key}<br>{child_basename}"
                 # Use default rectangle shape for files
                 mermaid_string += f'{indent}  {child_key}["{node_label}"]\n'
                 defined_nodes.add(child_key)
 
         # End Subgraph
         if subgraph_declared:
-             mermaid_string += f'{indent}end\n'
+            mermaid_string += f"{indent}end\n"
 
     # Initial call for root nodes (parent_path is None)
     generate_mermaid_nodes_recursive(None, all_keys_for_node_defs)
@@ -847,20 +1079,25 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
     # --- Add Dependencies (Consolidated and Sorted) ---
     mermaid_string += "\n// --- Dependencies ---\n"
     dep_char_to_label = {
-        '<': "relies on", '>': "required by", 'x': "mutual reliance",
-        'd': "docs", 's': "semantic (weak)", 'S': "semantic (strong)",
+        "<": "relies on",
+        ">": "required by",
+        "x": "mutual reliance",
+        "d": "docs",
+        "s": "semantic (weak)",
+        "S": "semantic (strong)",
     }
     # Group edges by (source, label, arrow_type)
     grouped_edges: Dict[Tuple[str, str, str], List[str]] = defaultdict(list)
-    arrow_map = {'x': '<-->', 's': '-.->', 'S': '==>'} # Map special chars to arrows
+    arrow_map = {"x": "<-->", "s": "-.->", "S": "==>"}  # Map special chars to arrows
 
     for k1, k2, dep_char in final_edges_to_draw:
         # Ensure both nodes were needed (redundant check, but safe)
-        if k1 not in all_keys_for_node_defs or k2 not in all_keys_for_node_defs: continue
+        if k1 not in all_keys_for_node_defs or k2 not in all_keys_for_node_defs:
+            continue
 
         label = dep_char_to_label.get(dep_char, dep_char)
         # Determine arrow type based on final resolved character
-        arrow = arrow_map.get(dep_char, '-->') # Default arrow
+        arrow = arrow_map.get(dep_char, "-->")  # Default arrow
         group_key = (k1, label, arrow)
         grouped_edges[group_key].append(k2)
 
@@ -872,7 +1109,7 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
     # <<< CORRECTION END >>>
 
     # Iterate through sorted sources, then grouped edges for that source
-    for source_key in sorted_unique_sources: # Use the correctly sorted list
+    for source_key in sorted_unique_sources:  # Use the correctly sorted list
         # Find all groups starting with this source key
         source_groups = [(key, targets) for key, targets in grouped_edges.items() if key[0] == source_key]
         # Sort groups by label for consistent output order within a source
@@ -895,8 +1132,9 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
 
     try:
         output_dir = os.path.dirname(output_path)
-        if output_dir: os.makedirs(output_dir, exist_ok=True)
-        with open(output_path, 'w', encoding='utf-8') as f:
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(mermaid_string)
         logger.info(f"Successfully generated Mermaid visualization: {output_path}")
         print(f"\nDependency visualization saved to: {output_path}")
@@ -910,6 +1148,8 @@ def handle_visualize_dependencies(args: argparse.Namespace) -> int:
         logger.exception(f"An unexpected error occurred during visualization generation: {e}")
         print(f"Error: An unexpected error occurred: {e}")
         return 1
+
+
 # <<< END NEW COMMAND HANDLER >>>
 
 
@@ -924,11 +1164,19 @@ def main():
     analyze_file_parser.add_argument("--output", help="Save results to JSON file")
     analyze_file_parser.set_defaults(func=command_handler_analyze_file)
 
-    analyze_project_parser = subparsers.add_parser("analyze-project", help="Analyze project, generate keys/embeddings, update trackers")
-    analyze_project_parser.add_argument("project_root", nargs='?', default='.', help="Project directory path (default: CWD)")
+    analyze_project_parser = subparsers.add_parser(
+        "analyze-project", help="Analyze project, generate keys/embeddings, update trackers"
+    )
+    analyze_project_parser.add_argument(
+        "project_root", nargs="?", default=".", help="Project directory path (default: CWD)"
+    )
     analyze_project_parser.add_argument("--output", help="Save analysis summary to JSON file")
-    analyze_project_parser.add_argument("--force-embeddings", action="store_true", help="Force regeneration of embeddings")
-    analyze_project_parser.add_argument("--force-analysis", action="store_true", help="Force re-analysis and bypass cache")
+    analyze_project_parser.add_argument(
+        "--force-embeddings", action="store_true", help="Force regeneration of embeddings"
+    )
+    analyze_project_parser.add_argument(
+        "--force-analysis", action="store_true", help="Force re-analysis and bypass cache"
+    )
     analyze_project_parser.set_defaults(func=command_handler_analyze_project)
 
     # --- Grid Manipulation Commands ---
@@ -955,12 +1203,16 @@ def main():
     add_dep_parser = subparsers.add_parser("add-dependency", help="Add dependency between keys")
     add_dep_parser.add_argument("--tracker", required=True, help="Path to tracker file")
     add_dep_parser.add_argument("--source-key", required=True, help="Source key")
-    add_dep_parser.add_argument("--target-key", required=True, nargs='+', help="One or more target keys (space-separated)")
+    add_dep_parser.add_argument(
+        "--target-key", required=True, nargs="+", help="One or more target keys (space-separated)"
+    )
     add_dep_parser.add_argument("--dep-type", default=">", help="Dependency type (e.g., '>', '<', 'x')")
     add_dep_parser.set_defaults(func=handle_add_dependency)
 
     # --- Tracker File Management ---
-    remove_key_parser = subparsers.add_parser("remove-key", help="Remove a key and its row/column from a specific tracker")
+    remove_key_parser = subparsers.add_parser(
+        "remove-key", help="Remove a key and its row/column from a specific tracker"
+    )
     remove_key_parser.add_argument("tracker_file", help="Path to the tracker file (.md)")
     remove_key_parser.add_argument("key", type=str, help="The key string to remove from this tracker")
     remove_key_parser.set_defaults(func=handle_remove_key)
@@ -994,44 +1246,68 @@ def main():
     show_deps_parser.set_defaults(func=handle_show_dependencies)
 
     # --- Show Keys Command ---
-    show_keys_parser = subparsers.add_parser("show-keys", help="Show keys from tracker, indicating if checks needed (p, s, S)")
+    show_keys_parser = subparsers.add_parser(
+        "show-keys", help="Show keys from tracker, indicating if checks needed (p, s, S)"
+    )
     show_keys_parser.add_argument("--tracker", required=True, help="Path to the tracker file (.md)")
     show_keys_parser.set_defaults(func=handle_show_keys)
 
     # <<< NEW PARSER: Visualize Dependencies >>>
     visualize_parser = subparsers.add_parser("visualize-dependencies", help="Generate a visualization of dependencies")
-    visualize_parser.add_argument("--key", help="Optional: Key string to focus the visualization on (shows only direct connections)")
-    visualize_parser.add_argument("--format", choices=["mermaid"], default="mermaid", help="Output format (only mermaid currently)")
-    visualize_parser.add_argument("--output", "-o", help="Output file path (default: project_dependencies.mermaid or KEY_dependencies.mermaid)")
+    visualize_parser.add_argument(
+        "--key", help="Optional: Key string to focus the visualization on (shows only direct connections)"
+    )
+    visualize_parser.add_argument(
+        "--format", choices=["mermaid"], default="mermaid", help="Output format (only mermaid currently)"
+    )
+    visualize_parser.add_argument(
+        "--output", "-o", help="Output file path (default: project_dependencies.mermaid or KEY_dependencies.mermaid)"
+    )
     visualize_parser.set_defaults(func=handle_visualize_dependencies)
     # <<< END NEW PARSER >>>
-
 
     args = parser.parse_args()
 
     # --- Setup Logging ---
-    log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    root_logger = logging.getLogger(); root_logger.setLevel(logging.DEBUG)
-    log_file_path = 'debug.txt'; suggestions_log_path = 'suggestions.log'
-    try: # File Handler
-        file_handler = logging.FileHandler(log_file_path, mode='w'); file_handler.setLevel(logging.DEBUG); file_handler.setFormatter(log_formatter); root_logger.addHandler(file_handler)
-    except Exception as e: print(f"Error setting up file logger {log_file_path}: {e}", file=sys.stderr)
-    try: # Suggestions Handler
-        suggestion_handler = logging.FileHandler(suggestions_log_path, mode='w'); suggestion_handler.setLevel(logging.DEBUG); suggestion_handler.setFormatter(log_formatter)
+    log_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    log_file_path = "debug.txt"
+    suggestions_log_path = "suggestions.log"
+    try:  # File Handler
+        file_handler = logging.FileHandler(log_file_path, mode="w")
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(log_formatter)
+        root_logger.addHandler(file_handler)
+    except Exception as e:
+        print(f"Error setting up file logger {log_file_path}: {e}", file=sys.stderr)
+    try:  # Suggestions Handler
+        suggestion_handler = logging.FileHandler(suggestions_log_path, mode="w")
+        suggestion_handler.setLevel(logging.DEBUG)
+        suggestion_handler.setFormatter(log_formatter)
+
         class SuggestionLogFilter(logging.Filter):
-            def filter(self, record): return record.name.startswith('cline_utils.dependency_system.analysis') # Broaden slightly
-        suggestion_handler.addFilter(SuggestionLogFilter()); root_logger.addHandler(suggestion_handler)
-    except Exception as e: print(f"Error setting up suggestions logger {suggestions_log_path}: {e}", file=sys.stderr)
+            def filter(self, record):
+                return record.name.startswith("cline_utils.dependency_system.analysis")  # Broaden slightly
+
+        suggestion_handler.addFilter(SuggestionLogFilter())
+        root_logger.addHandler(suggestion_handler)
+    except Exception as e:
+        print(f"Error setting up suggestions logger {suggestions_log_path}: {e}", file=sys.stderr)
     # Console Handler
-    console_handler = logging.StreamHandler(sys.stdout); console_handler.setLevel(logging.INFO); console_handler.setFormatter(log_formatter); root_logger.addHandler(console_handler)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(log_formatter)
+    root_logger.addHandler(console_handler)
 
     # Execute command
-    if hasattr(args, 'func'):
+    if hasattr(args, "func"):
         exit_code = args.func(args)
         sys.exit(exit_code)
     else:
         parser.print_help()
         sys.exit(1)
 
+
 if __name__ == "__main__":
-    main() # Call main function if script is executed
+    main()  # Call main function if script is executed
