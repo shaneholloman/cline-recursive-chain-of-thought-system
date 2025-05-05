@@ -115,14 +115,15 @@ Privacy and Bias Mitigation: The user model is for improving collaboration only 
 
 ```json
 [
-  {
-    "version": "0.1",
-    "timestamp": "2025-02-10 18:58:00",
-    "changes": "Initial draft of user profile created."
-  },
-  {
-    "version": "0.2",
-    "timestamp": "2025-02-10 19:45:00",
-    "changes": "Implemented basic version control, duplicating full content for each version."
-  }
+    {
+        "version": "0.1",
+        "timestamp": "2025-02-10 18:58:00",
+        "changes": "Initial draft of user profile created."
+    },
+    {
+        "version": "0.2",
+        "timestamp": "2025-02-10 19:45:00",
+        "changes": "Implemented basic version control, duplicating full content for each version."
+    }
 ]
+```
