@@ -10,7 +10,7 @@ Version **v7.5** represents a significant restructuring of the ReCoTs system, br
    - cleanup_consolidation is responsible for consolidating project information into the appropriate files and either archiving or deleting old tasks.
    **WARNING** This new phase leverages shell commands for renaming, moving, and deleting files. **DO NOT** let the system go unattended during this phase if you value your project content. The system *should* ask the user for confirmation on which commands to use for the specific environment it is using, however certain instructions in the Cline and Roo system prompts may interfere with this behavior, so use caution until this new feature has proven to be stable.
 - New templates were added to enhance the strategy and execution phases: hdta_review_progress and hierarchical_task_checklist.
-- Added more utility information to the [LEARNING_JOURNAL] in .clinerules.
+- Added more utility information to the [LEARNING_JOURNAL] in `.clinerules` file.
 
 This version includes a more automated design, consolidating operations and enhancing efficiency.
 It also incorporates:

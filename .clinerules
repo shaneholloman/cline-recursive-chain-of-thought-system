@@ -1,6 +1,10 @@
+# Cline Rules
+
 [COUNT]
 n + 1 = (x)
-*This is a systemwide progressive counter where x = number of current response. This must be displayed at the top of every response.(e.g. 1, 2, ...)*
+
+> [!NOTE]
+> This is a system-wide progressive counter where x = number of current response. This must be displayed at the top of every response.(e.g. 1, 2, ...)
 
 [LAST_ACTION_STATE]
 last_action: "System Initialized"
@@ -11,12 +15,15 @@ next_phase: "Set-up/Maintenance"
 ---
 
 [CODE_ROOT_DIRECTORIES]
+
 - src
 
 [DOC_DIRECTORIES]
+
 - docs
 
 [LEARNING_JOURNAL]
+
 - Regularly updating {memory_dir} and any instruction files help me to remember what I have done and what still needs to be done so I don't lose track.
 - Ensure functions handle potential `None` inputs gracefully to prevent TypeErrors.
 - Verify function call arguments match definitions precisely after refactoring.
@@ -42,7 +49,7 @@ next_phase: "Set-up/Maintenance"
 
 [Character_Definitions]
 
-```
+```txt
 - `<`: Row **functionally relies on** or requires Column for context/operation.
 - `>`: Column **functionally relies on** or requires Row for context/operation.
 - `x`: Mutual functional reliance or deep conceptual link.
@@ -55,13 +62,17 @@ next_phase: "Set-up/Maintenance"
 
 ---
 
-**IMPORTANT**
-1. Understand the Objective: Clearly define the goal of the current step.
-2. Analyze the Error: Understand the error message and its context.
-3. Formulate a Plan: Develop a plan to address the error, step-by-step.
-    *Consider all related aspects* (e.g. files, modules, dependencies, etc.)
-4. Execute the Plan (Tool Use): Use the appropriate tool to execute *one* step of the plan.
-5. Validate the Result: Check if the tool use was successful and if it addressed the error.
-6. Iterate: If the error persists, go back to step 2 and refine the plan based on the new information.
+> [!IMPORTANT]
+>
+> 1. Understand the Objective: Clearly define the goal of the current step.
+> 2. Analyze the Error: Understand the error message and its context.
+> 3. Formulate a Plan: Develop a plan to address the error, step-by-step.
+>     *Consider all related aspects* (e.g. files, modules, dependencies, etc.)
+> 4. Execute the Plan (Tool Use): Use the appropriate tool to execute *one* step of the plan.
+> 5. Validate the Result: Check if the tool use was successful and if it addressed the error.
+> 6. Iterate: If the error persists, go back to step 2 and refine the plan based on the new information.
 
-*You MUST monitor the context window usage displayed in the environment details. For every 1/5th of the available/max context window, you MUST initiate MUP.*
+---
+
+> [!CAUTION]
+> *You MUST monitor the context window usage displayed in the environment details. For every 1/5th of the available/max context window, you MUST initiate MUP.*
