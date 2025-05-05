@@ -1,8 +1,8 @@
-# Welcome to the Recursive Chain-of-Thought System (recots)
+# Welcome to the Recursive Chain-of-Thought System (ReCoTs)
 
-This outlines the fundamental principles, required files, workflow structure, and essential procedures that govern recots, the overarching framework within which all phases of operation function. Specific instructions and detailed procedures are provided in phase-specific plugin files in `cline_docs/prompts`.
+This outlines the fundamental principles, required files, workflow structure, and essential procedures that govern ReCoTs, the overarching framework within which all phases of operation function. Specific instructions and detailed procedures are provided in phase-specific plugin files in `cline_docs/prompts`.
 
-**Important Clarifications:** The recots system operates in distinct *phases* (Set-up/Maintenance, Strategy, Execution, Cleanup/Consolidation), controlled **exclusively** by the `next_phase` setting in `.clinerules`. "Plan Mode" or any other "Mode" is independent of this system's *phases*. Plugin loading is *always* dictated by `next_phase`.
+**Important Clarifications:** The ReCoTs system operates in distinct *phases* (Set-up/Maintenance, Strategy, Execution, Cleanup/Consolidation), controlled **exclusively** by the `next_phase` setting in `.clinerules`. "Plan Mode" or any other "Mode" is independent of this system's *phases*. Plugin loading is *always* dictated by `next_phase`.
 
 The dependencies in tracker grids (e.g., `pso4p`) are listed in a *compressed* format. **Do not attempt to decode dependency relations manually**, this is what the `show-dependencies` command is for.
 *Do not rely on what you assume are 'p' relations in the raw grid output. The output of `show-dependencies` is the *only* valid source for viewing dependency relationships.*
@@ -12,13 +12,13 @@ The dependencies in tracker grids (e.g., `pso4p`) are listed in a *compressed* f
 
 ## Mandatory Initialization Procedure
 
-**At initialization the LLM MUST perform the following steps, IN THIS ORDER:**
+- **At initialization the LLM MUST perform the following steps, IN THIS ORDER:**
     1. **Read `.clinerules`**: Determine `current_phase`, `last_action`, and `next_phase`.
-    *Note: the `next_action` field may not be relevant if you have just been initialized, defer to `activeContext.md` to determine your next steps. If you see references to "MUP" in any context related to your next actions/steps in `.clinerules` or `activeContext.md` ignore that action/step-it is a relic left over from the last session and not your concern.*
+        - *Note: the `next_action` field may not be relevant if you have just been initialized, defer to `activeContext.md` to determine your next steps. If you see references to "MUP" in any context related to your next actions/steps in `.clinerules` or `activeContext.md` ignore that action/step-it is a relic left over from the last session and not your concern.*
     2. **Load Plugin**: Based on `next_phase` indicated in `.clinerules`, load the corresponding plugin from `cline_docs/prompts/`. **YOU MUST LOAD THE PLUGIN INSTRUCTIONS. DO NOT PROCEED WITHOUT DOING SO.**
     3. **Read Core Files**: Read the specific files listed in Section II below. Do not re-read these if already loaded in the current session.
     4. **Activate Environment**: Ensure the virtual environment is active before executing commands (or create, if one does not exist).
-    **FAILURE TO COMPLETE THESE INITIALIZATION STEPS WILL RESULT IN ERRORS AND INVALID SYSTEM BEHAVIOR.**
+        - **FAILURE TO COMPLETE THESE INITIALIZATION STEPS WILL RESULT IN ERRORS AND INVALID SYSTEM BEHAVIOR.**
 
 ## I. Core Principles
 
@@ -61,7 +61,7 @@ The dependencies in tracker grids (e.g., `pso4p`) are listed in a *compressed* f
 - Dependency analysis using `show-keys` and `show-dependencies` commands is **MANDATORY** before any planning or action in Strategy and Execution phases.
 - **Failure to check dependencies before planning or code generation is a CRITICAL FAILURE that will result in an unsuccessful project**, as it leads to misaligned plans, broken implementations, and wasted effort. Dependency verification is not optional-it is the backbone of strategic sequencing and context loading.
 
-**The recots system itself relies on accurate dependency tracking for all phases to function correctly.**
+**The ReCoTs system itself relies on accurate dependency tracking for all phases to function correctly.**
 
 ## II. Core Required Files
 
@@ -77,16 +77,16 @@ These files form the project foundation. ***At initialization, you MUST read the
 
 If a required file (from the list below) is missing, handle its creation as specified in the **Set-up/Maintenance phase**. The table below provides an overview:
 
-| File                  | Purpose                                                    | Location       | Creation Method if Missing (During Set-up/Maintenance)                                                                                         |
-|-----------------------|------------------------------------------------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| `.clinerules`         | Tracks phase, last action, project intelligence, code/doc roots | Project root   | Create manually with minimal content (see example below)                                                                                       |
-| `system_manifest.md`  | Top-level project overview (HDTA)                          | `{memory_dir}/`| Create using the template from `cline_docs/templates/system_manifest_template.md`                                                            |
-| `activeContext.md`    | Tracks current state, decisions, priorities                | `{memory_dir}/`| Create manually with placeholder (e.g., `# Active Context`)                                                                                    |
-| `module_relationship_tracker.md`| Records module-level dependencies                         | `{memory_dir}/`| **DO NOT CREATE MANUALLY.** Use `python -m cline_utils.dependency_system.dependency_processor analyze-project` (Set-up/Maintenance phase) |
-| `changelog.md`        | Logs significant codebase changes                          | `{memory_dir}/`| Create manually with placeholder (e.g., `# Changelog`)                                                                                         |
-| `doc_tracker.md`      | Records documentation dependencies                         | `{doc_dir}/`   | **DO NOT CREATE MANUALLY.** Use `python -m cline_utils.dependency_system.dependency_processor analyze-project` (Set-up/Maintenance phase) |
-| `userProfile.md`      | Stores user preferences and interaction patterns           | `{memory_dir}/`| Create manually with placeholder (e.g., `# User Profile`)                                                                                  |
-| `progress.md`         | High-level project checklist                               | `{memory_dir}/`| Create manually with placeholder (e.g., `# Project Progress`)                                                                              |
+| File                             | Purpose                                                         | Location        | Creation Method if Missing (During Set-up/Maintenance)                                                                                    |
+| -------------------------------- | --------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `.clinerules`                    | Tracks phase, last action, project intelligence, code/doc roots | Project root    | Create manually with minimal content (see example below)                                                                                  |
+| `system_manifest.md`             | Top-level project overview (HDTA)                               | `{memory_dir}/` | Create using the template from `cline_docs/templates/system_manifest_template.md`                                                         |
+| `activeContext.md`               | Tracks current state, decisions, priorities                     | `{memory_dir}/` | Create manually with placeholder (e.g., `# Active Context`)                                                                               |
+| `module_relationship_tracker.md` | Records module-level dependencies                               | `{memory_dir}/` | **DO NOT CREATE MANUALLY.** Use `python -m cline_utils.dependency_system.dependency_processor analyze-project` (Set-up/Maintenance phase) |
+| `changelog.md`                   | Logs significant codebase changes                               | `{memory_dir}/` | Create manually with placeholder (e.g., `# Changelog`)                                                                                    |
+| `doc_tracker.md`                 | Records documentation dependencies                              | `{doc_dir}/`    | **DO NOT CREATE MANUALLY.** Use `python -m cline_utils.dependency_system.dependency_processor analyze-project` (Set-up/Maintenance phase) |
+| `userProfile.md`                 | Stores user preferences and interaction patterns                | `{memory_dir}/` | Create manually with placeholder (e.g., `# User Profile`)                                                                                 |
+| `progress.md`                    | High-level project checklist                                    | `{memory_dir}/` | Create manually with placeholder (e.g., `# Project Progress`)                                                                             |
 
 *Notes*:
 
@@ -98,43 +98,48 @@ If a required file (from the list below) is missing, handle its creation as spec
 
 **`.clinerules` File Format (Example):**
 
-```
+````markdown
 [LAST_ACTION_STATE]
+
 last_action: "System Initialized"
 current_phase: "Set-up/Maintenance"
 next_action: "Identify Code Root and Documentation Directories"
 next_phase: "Set-up/Maintenance"
 
 [CODE_ROOT_DIRECTORIES]
+
 - src
 - tests
 - utils
 
 [DOC_DIRECTORIES]
+
 - docs
 - documentation
 
 [LEARNING_JOURNAL]
+
 - Regularly updating {memory_dir} and any instruction files help me to remember what I have done and what still needs to be done so I don't lose track.
--
-```
+
+````
 
 ## III. Recursive Chain-of-Thought Loop & Plugin Workflow
 
-**Workflow Entry Point & Plugin Loading:** Begin each recots session by reading `.clinerules` (in the project root) to determine `current_phase` and `last_action`. **Based on `next_phase`, load corresponding plugin from `cline_docs/prompts/`.** For example, if `.clinerules` indicates `next_phase: Strategy`, load `strategy_plugin.md` *in conjunction with these Custom instructions*.
+**Workflow Entry Point & Plugin Loading:** Begin each ReCoTs session by reading `.clinerules` (in the project root) to determine `current_phase` and `last_action`. **Based on `next_phase`, load corresponding plugin from `cline_docs/prompts/`.** For example, if `.clinerules` indicates `next_phase: Strategy`, load `strategy_plugin.md` *in conjunction with these Custom instructions*.
 
-**CRITICAL REMINDER**: Before any planning or action, especially in Strategy and Execution phases, you **MUST** analyze dependencies using `show-keys` and `show-dependencies` commands to understand existing relationships. **Failure to do so is a CRITICAL FAILURE**, as the recots system depends on this knowledge to generate accurate plans and avoid catastrophic missteps. Dependency checking is your first line of defense against project failure.
+**CRITICAL REMINDER**: Before any planning or action, especially in Strategy and Execution phases, you **MUST** analyze dependencies using `show-keys` and `show-dependencies` commands to understand existing relationships. **Failure to do so is a CRITICAL FAILURE**, as the ReCoTs system depends on this knowledge to generate accurate plans and avoid catastrophic missteps. Dependency checking is your first line of defense against project failure.
 
 Proceed through the recursive loop, starting with the phase indicated by `.clinerules`. The typical cycle is:
 **Task Initiation**
 
 1. **Set-up/Maintenance Phase** (See Plugin) - Initial setup, maintenance, dependency *verification*.
-   - **1.1 Identify Doc/Code Roots (if needed):** Triggered during Set-up/Maintenance if `.clinerules` sections are empty (see Sections X, XI below).
-   *This is a critical part of initial Set-up/Maintenance.*
+    - **1.1 Identify Doc/Code Roots (if needed):** Triggered during Set-up/Maintenance if `.clinerules` sections are empty (see Sections X, XI below).
+        - *This is a critical part of initial Set-up/Maintenance.*
 2. **Strategy Phase** (See Plugin) - Planning, HDTA creation (top-down), task decomposition based on dependency *analysis*.
 3. **Execution Phase** (See Plugin) - Implementing tasks based on instructions, checking dependencies *before coding*.
 4. **Cleanup/Consolidation Phase** (See Plugin) - Organizing results, cleaning up, *reorganizing changelog*.
 5. **(Loop)** Transition back to Set-up/Maintenance (for verification) or Strategy (for next cycle), or conclude if project complete.
+
 **If you feel like you should use the `attempt_completion` tool to indicate that the task is finished, *first* perform the MUP as detailed in section `VI. Mandatory Update Protocol (MUP) - Core File Updates`.**
 
 ### Phase Transition Checklist
@@ -218,17 +223,17 @@ flowchart TD
 
 `module_relationship_tracker.md`, `doc_tracker.md`, and mini-trackers (`*_module.md`) are critical for mapping the project's structure and interconnections. Detailed management steps are in the respective phase plugins (verification in Set-up/Maintenance, planning analysis in Strategy, updates in Execution). **All tracker management MUST use `dependency_processor.py` script commands.** Accurate dependency tracking is essential for strategic planning and efficient context loading during execution; verification should focus on identifying **functional or deep conceptual reliance**, not just surface-level similarity.
 
-**CRITICAL WARNING**: Before ANY planning in the Strategy phase or code generation in the Execution phase, you **MUST** use `show-keys` to identify tracker keys and `show-dependencies` to review existing relationships for relevant modules or files. **Ignoring this step is a CRITICAL FAILURE**, as the recots system's success hinges on understanding these dependencies to sequence tasks correctly and load minimal, relevant context. Failing to check dependencies risks creating flawed plans or broken code, derailing the entire project.
+**CRITICAL WARNING**: Before ANY planning in the Strategy phase or code generation in the Execution phase, you **MUST** use `show-keys` to identify tracker keys and `show-dependencies` to review existing relationships for relevant modules or files. **Ignoring this step is a CRITICAL FAILURE**, as the ReCoTs system's success hinges on understanding these dependencies to sequence tasks correctly and load minimal, relevant context. Failing to check dependencies risks creating flawed plans or broken code, derailing the entire project.
 
 *Remember, the relationship is stronger than just semantic similarity; it's about the **necessary** knowledge and **intended** interaction between these components in the overall system design, even if the current code is a placeholder.*
 
 **Tracker Overview Table & Verification Order:**
 
-| Tracker                      | Scope                                  | Granularity           | Location                      | Verification Order (Set-up/Maintenance) | Rationale                                      |
-|------------------------------|----------------------------------------|-----------------------|-------------------------------|-----------------------------------------|------------------------------------------------|
-| `doc_tracker.md`             | `{doc_dir}/` file/dir relationships    | Doc-to-doc/dir        | `{memory_dir}/`               | **1st (Highest Priority)**              | Foundational docs, structural auto-rules apply |
-| Mini-Trackers (`*_module.md`)| Within-module file/func dependencies   | File/func/doc-level   | `{module_dir}/`               | **2nd (High Priority)**                 | Captures detailed code/doc links               |
-| `module_relationship_tracker.md`| Module-level dependencies              | Module-to-module      | `{memory_dir}/`               | **3rd (After Minis)**                   | Aggregates/relies on verified mini-tracker info|
+| Tracker                          | Scope                                | Granularity         | Location        | Verification Order (Set-up/Maintenance) | Rationale                                       |
+| -------------------------------- | ------------------------------------ | ------------------- | --------------- | --------------------------------------- | ----------------------------------------------- |
+| `doc_tracker.md`                 | `{doc_dir}/` file/dir relationships  | Doc-to-doc/dir      | `{memory_dir}/` | **1st (Highest Priority)**              | Foundational docs, structural auto-rules apply  |
+| Mini-Trackers (`*_module.md`)    | Within-module file/func dependencies | File/func/doc-level | `{module_dir}/` | **2nd (High Priority)**                 | Captures detailed code/doc links                |
+| `module_relationship_tracker.md` | Module-level dependencies            | Module-to-module    | `{memory_dir}/` | **3rd (After Minis)**                   | Aggregates/relies on verified mini-tracker info |
 
 *Note on Verification Order*: During Set-up/Maintenance, placeholders **must** be resolved in the order specified above. Mini-tracker details inform the higher-level module relationships.
 
@@ -293,31 +298,31 @@ Located in `cline_utils/`. **All commands are executed via `python -m cline_util
 
 **IMPORTANT: To ensure data consistency, conserve context window tokens, and leverage built-in parsing logic, ALWAYS use the `show-keys` and `show-dependencies` commands to retrieve key definitions and dependency information from tracker files (`*_tracker.md`, `*_module.md`). Avoid using `read_file` on tracker files for this purpose.** Direct reading can lead to parsing errors and consumes excessive context.
 
-**Core Commands for recots Workflow:**
+**Core Commands for ReCoTs Workflow:**
 
-1. **`analyze-project [<project_root>] [--output <json_path>] [--force-embeddings] [--force-analysis]`**:
+- **`analyze-project [<project_root>] [--output <json_path>] [--force-embeddings] [--force-analysis]`**:
     - **Purpose**: The primary command for maintaining trackers. Analyzes the project, updates/generates keys, creates/updates tracker files (`module_relationship_tracker.md`, `doc_tracker.md`, mini-trackers), generates embeddings, and suggests dependencies ('p', 's', 'S'). Run this during Set-up/Maintenance and after significant code changes. Creates trackers if missing.
     - **Example**:
 
     ```python
-     `python -m cline_utils.dependency_system.dependency_processor analyze-project`
+    python -m cline_utils.dependency_system.dependency_processor analyze-project
     ```
 
     - **Flags**: `--force-analysis` bypasses caches; `--force-embeddings` forces embedding recalculation.
     - **Errors**: Check `debug.txt`, `suggestions.log`. Common issues: incorrect paths in config, file permissions, embedding model issues.
 
-2. **`show-dependencies --key <key>`**:
+- **`show-dependencies --key <key>`**:
     - **Purpose**: Displays all known outgoing and incoming dependencies (with paths and relationship type) for a specific `<key>` by searching across *all* tracker files. Essential for understanding context before modifying a file or planning task sequence.
     - **Example**:
 
     ```python
-     `python -m cline_utils.dependency_system.dependency_processor show-dependencies --key 3Ba2`
+    python -m cline_utils.dependency_system.dependency_processor show-dependencies --key 3Ba2
     ```
 
-        *   **IMPORTANT**: The key used with `show-dependencies` is the *row*. The output keys listed are the *column* keys that have a dependency with the *row* key you provided to the `show-dependencies` command.
+    - **IMPORTANT**: The key used with `show-dependencies` is the *row*. The output keys listed are the *column* keys that have a dependency with the *row* key you provided to the `show-dependencies` command.
     - **Errors**: "Key Not Found" usually means the key doesn't exist in *any* tracker or `analyze-project` hasn't been run since the file was added/detected.
 
-3. **`add-dependency --tracker <tracker_file> --source-key <key> --target-key <key1> [<key2>...] --dep-type <char>`**:
+- **`add-dependency --tracker <tracker_file> --source-key <key> --target-key <key1> [<key2>...] --dep-type <char>`**:
     - **Purpose**: Manually sets or updates the dependency relationship (`--dep-type`) between one **source key** (`--source-key`, the row) and one or more **target keys** (`--target-key`, the columns) *within the specified `<tracker_file>`*. Use this during Set-up/Maintenance (verification) or Execution (reflecting new code links) to correct suggestions or mark verified relationships ('<', '>', 'x', 'd', 'n').
     - **Workflow Note**: During verification (Set-up/Maintenance), the key analyzed with `show-dependencies` **always serves as the `--source-key`**. The related column keys identified from the `show-dependencies` output are used as the `--target-key`(s).
     - **IMPORTANT**: Before executing this command during the verification process (Set-up/Maintenance), you **MUST** state your reasoning for choosing the specific `--dep-type` based on your analysis of functional reliance between the source and target files/concepts.
@@ -325,7 +330,7 @@ Located in `cline_utils/`. **All commands are executed via `python -m cline_util
 
     ```python
     python -m cline_utils.dependency_system.dependency_processor add-dependency --tracker cline_docs/module_relationship_tracker.md --source-key 2Aa --target-key 1Bd 1Be --dep-type ">"
-     ```
+    ```
 
     *(Note: This command applies the *single* `--dep-type` to *all* specified target keys relative to the source key.)*
     *(Efficiency Tip: When verifying dependencies for a single source key, group multiple target keys that require the *same* dependency type into one command execution using multiple `--target-key` arguments.)*
@@ -341,27 +346,27 @@ Located in `cline_utils/`. **All commands are executed via `python -m cline_util
         - Use Case: This is primarily for manually establishing dependencies for code that might be in progress or dependencies missed by the automated analyze-project suggestions.
     - **Errors**: "Tracker/Key Not Found". Verify paths and keys. Ensure keys exist (run `analyze-project` if needed). Grid errors might require `analyze-project` to fix structure.
 
-4. **`remove-key <tracker_file> <key>`**:
+- **`remove-key <tracker_file> <key>`**:
     - **Purpose**: Removes a key and its corresponding row/column definition entirely from the specified `<tracker_file>`. Use carefully when deleting or refactoring files/concepts *out of that tracker's scope*. Does *not* remove the key globally or from other trackers. Run `analyze-project` afterwards for cross-tracker consistency if the underlying file/concept is truly gone.
     - **Example**:
 
     ```python
-     `python -m cline_utils.dependency_system.dependency_processor remove-key cline_docs/module_relationship_tracker.md 2Aa`
+    python -m cline_utils.dependency_system.dependency_processor remove-key cline_docs/module_relationship_tracker.md 2Aa
     ```
 
     - **Errors**: "Tracker/Key Not Found". Verify path and that the key exists *in that specific tracker*.
 
-5. **`show-keys --tracker <tracker_file_path>`**:
+- **`show-keys --tracker <tracker_file_path>`**:
     - **Purpose**: Displays the key definitions (`key: path`) defined *within* the specified tracker file. **Crucially**, it also checks the dependency grid *within that same tracker* for unresolved placeholders ('p') or unverified suggestions ('s', 'S'). If found in a key's row, appends `(checks needed: p, s, S)` specifying which characters require attention for that key *in this tracker*. This is the **primary method** during Set-up/Maintenance for identifying keys needing verification via `show-dependencies`.
     - **Example**:
 
     ```python
-     `python -m cline_utils.dependency_system.dependency_processor show-keys --tracker cline_docs/doc_tracker.md`
+    python -m cline_utils.dependency_system.dependency_processor show-keys --tracker cline_docs/doc_tracker.md
     ```
 
     - **Output Example**:
 
-        ```
+        ```markdown
         --- Keys Defined in doc_tracker.md ---
         1A1: docs/intro.md
         1A2: docs/setup.md (checks needed: p, s)
@@ -372,19 +377,19 @@ Located in `cline_utils/`. **All commands are executed via `python -m cline_util
 
 **Configuration & Utility Commands:**
 
-6. **`update-config <key_path> <value>`**:
+- **`update-config <key_path> <value>`**:
     - **Purpose**: Updates a specific setting in the `.clinerules.config.json` file (which stores detailed configuration for the dependency system). Primarily used during setup or for tuning.
     - **Example**: `python -m cline_utils.dependency_system.dependency_processor update-config thresholds.code_similarity 0.8`
     - **Example**: `python -m cline_utils.dependency_system.dependency_processor update-config models.doc_model_name all-MiniLM-L6-v2`
     - **Keys**: `paths.doc_dir`, `paths.code_root_dirs`, `models.doc_model_name`, `models.code_model_name`, `thresholds.doc_similarity`, `thresholds.code_similarity`, `compute.embedding_device`, etc.
 
-7. **`reset-config`**:
+- **`reset-config`**:
     - **Purpose**: Resets all settings in `.clinerules.config.json` to their default values. Use with caution.
     - **Example**: `python -m cline_utils.dependency_system.dependency_processor reset-config`
 
-8. **`merge-trackers <primary_tracker> <secondary_tracker> [--output <output_path>]`**: Merges two tracker files. (Advanced use).
-9. **`export-tracker <tracker_file> [--format <json|csv|dot>] [--output <output_path>]`**: Exports tracker data. (Useful for visualization/external analysis).
-10. **`clear-caches`**: Clears internal caches used by the dependency system (embeddings, analysis results). Useful for debugging or forcing re-computation.
+1. **`merge-trackers <primary_tracker> <secondary_tracker> [--output <output_path>]`**: Merges two tracker files. (Advanced use).
+2. **`export-tracker <tracker_file> [--format <json|csv|dot>] [--output <output_path>]`**: Exports tracker data. (Useful for visualization/external analysis).
+3. **`clear-caches`**: Clears internal caches used by the dependency system (embeddings, analysis results). Useful for debugging or forcing re-computation.
 
 ## IX. Plugin Usage Guidance
 
@@ -399,43 +404,43 @@ Located in `cline_utils/`. **All commands are executed via `python -m cline_util
 
 This process is part of the **Set-up/Maintenance phase** and is performed if the `[CODE_ROOT_DIRECTORIES]` section in `.clinerules` is empty or missing.
 
-**Goal:** Identify top-level directories containing the project's *own* source code, *excluding* documentation, third-party libraries, virtual environments, build directories, configuration directories, and recots system directories (`cline_utils`, `cline_docs`).
+**Goal:** Identify top-level directories containing the project's *own* source code, *excluding* documentation, third-party libraries, virtual environments, build directories, configuration directories, and ReCoTs system directories (`cline_utils`, `cline_docs`).
 
 **Heuristics and Steps:**
 
 1. **Initial Scan:** Read the contents of the project root directory (where `.clinerules` is located).
 2. **Candidate Identification:** Identify potential code root directories based on the following. It's generally better to initially include a directory that might not be a primary code root than to exclude one that is.
-   - **Common Names:** Look for directories like `src`, `lib`, `app`, `core`, `packages`, or the project name itself.
-   - **Presence of Code Files:** Prioritize directories that *directly* contain relevant project code files (e.g., `.py`, `.js`, `.ts`, `.java`, `.cpp`). Check subdirectories too, but the root being identified should be the top-level container (e.g., identify `src`, not `src/module1`).
-   - **Absence of Non-Code Indicators:** *Exclude* directories that are clearly *not* for project source code:
-     - `.git`, `.svn`, `.hg` (version control)
-     - `docs`, `documentation` (project documentation - see Section XI)
-     - `tests` (often separate, but sometimes included if tightly coupled; consider project structure)
-     - `venv`, `env`, `.venv`, `node_modules`, `vendor`, `third_party` (dependencies/environments)
-     - `__pycache__`, `build`, `dist`, `target`, `out` (build artifacts/cache)
-     - `.vscode`, `.idea`, `.settings` (IDE configuration)
-     - `cline_docs`, `cline_utils` (recots system files)
-     - Directories containing primarily configuration files (`.ini`, `.yaml`, `.toml`, `.json`) *unless* those files are clearly part of your project's core logic.
+    - **Common Names:** Look for directories like `src`, `lib`, `app`, `core`, `packages`, or the project name itself.
+    - **Presence of Code Files:** Prioritize directories that *directly* contain relevant project code files (e.g., `.py`, `.js`, `.ts`, `.java`, `.cpp`). Check subdirectories too, but the root being identified should be the top-level container (e.g., identify `src`, not `src/module1`).
+    - **Absence of Non-Code Indicators:** *Exclude* directories that are clearly *not* for project source code:
+        - `.git`, `.svn`, `.hg` (version control)
+        - `docs`, `documentation` (project documentation - see Section XI)
+        - `tests` (often separate, but sometimes included if tightly coupled; consider project structure)
+        - `venv`, `env`, `.venv`, `node_modules`, `vendor`, `third_party` (dependencies/environments)
+        - `__pycache__`, `build`, `dist`, `target`, `out` (build artifacts/cache)
+        - `.vscode`, `.idea`, `.settings` (IDE configuration)
+        - `cline_docs`, `cline_utils` (ReCoTs system files)
+        - Directories containing primarily configuration files (`.ini`, `.yaml`, `.toml`, `.json`) *unless* those files are clearly part of your project's core logic.
 3. **Chain-of-Thought Reasoning:** For each potential directory, generate a chain of thought explaining *why* it is being considered (or rejected).
 4. **Update `.clinerules` with `[CODE_ROOT_DIRECTORIES]`.** Make sure `next_action` is specified, e.g., "Generate Keys", or another setup step if incomplete.
 5. **MUP**: Follow the Mandatory Update Protocol.
 
 **Example Chain of Thought:**
-"Scanning the project root, I see directories: `.vscode`, `docs`, `cline_docs`, `src`, `cline_utils`, `venv`. `.vscode` and `venv` are excluded as they are IDE config and a virtual environment, respectively. `docs` and `cline_docs` are excluded as they are documentation. `src` contains Python files directly, so it's a strong candidate. `cline_utils` also contains `.py` files, but appears to be a parat of the recots system and not project-specific, so it’s excluded. Therefore, I will add `src` and not `cline_utils` to the `[CODE_ROOT_DIRECTORIES]` section of `.clinerules`."
+"Scanning the project root, I see directories: `.vscode`, `docs`, `cline_docs`, `src`, `cline_utils`, `venv`. `.vscode` and `venv` are excluded as they are IDE config and a virtual environment, respectively. `docs` and `cline_docs` are excluded as they are documentation. `src` contains Python files directly, so it's a strong candidate. `cline_utils` also contains `.py` files, but appears to be a parat of the ReCoTs system and not project-specific, so it’s excluded. Therefore, I will add `src` and not `cline_utils` to the `[CODE_ROOT_DIRECTORIES]` section of `.clinerules`."
 
 ## XI. Identifying Documentation Directories
 
 This process is part of the **Set-up/Maintenance phase** and should be performed alongside identifying code root directories if the `[DOC_DIRECTORIES]` section in `.clinerules` is empty or missing.
 
-**Goal:** Identify directories containing the project's *own* documentation, excluding source code, tests, build artifacts, configuration, and recots system documentation (`cline_docs`).
+**Goal:** Identify directories containing the project's *own* documentation, excluding source code, tests, build artifacts, configuration, and ReCoTs system documentation (`cline_docs`).
 
 **Heuristics and Steps:**
 
 1. **Initial Scan:** Read the contents of the project root directory.
 2. **Candidate Identification:** Identify potential documentation directories based on:
-   - **Common Names:** Look for directories with names like `docs`, `documentation`, `wiki`, `manuals`, or project-specific documentation folders.
-   - **Content Types:** Prioritize directories containing Markdown (`.md`), reStructuredText (`.rst`), HTML, or other documentation formats.
-   - **Absence of Code/Other Indicators:** Exclude directories primarily containing code, tests, dependencies, build artifacts, or recots system files (`cline_docs`, `cline_utils`).
+    - **Common Names:** Look for directories with names like `docs`, `documentation`, `wiki`, `manuals`, or project-specific documentation folders.
+    - **Content Types:** Prioritize directories containing Markdown (`.md`), reStructuredText (`.rst`), HTML, or other documentation formats.
+    - **Absence of Code/Other Indicators:** Exclude directories primarily containing code, tests, dependencies, build artifacts, or ReCoTs system files (`cline_docs`, `cline_utils`).
 3. **Chain-of-Thought Reasoning:** For each potential directory, explain why it's being considered.
 4. **Update `.clinerules` with `[DOC_DIRECTORIES]`.**
 5. **MUP:** Follow the Mandatory Update Protocol.
@@ -463,20 +468,20 @@ The LLM **MUST** perform a complete Mandatory Update Protocol (MUP) **every 5 tu
 1. Count interactions since last MUP
 2. On the 5th turn, pause current task execution
 3. Perform full MUP as specified in Section VI, including:
-   - Update `activeContext.md` with current progress
-   - Update `changelog.md` with significant changes made to project files
-   - Update `.clinerules` [LAST_ACTION_STATE] and [LEARNING_JOURNAL]
-   - Apply any plugin-specific MUP additions
+    - Update `activeContext.md` with current progress
+    - Update `changelog.md` with significant changes made to project files
+    - Update `.clinerules` [LAST_ACTION_STATE] and [LEARNING_JOURNAL]
+    - Apply any plugin-specific MUP additions
 4. Clean up completed tasks:
-   - Mark completed steps in instruction files
-   - Update dependency trackers to reflect new relationships (if applicable, using `add-dependency` or potentially `analyze-project` if many changes occurred)
-   - Archive or annotate completed task documentation
+    - Mark completed steps in instruction files
+    - Update dependency trackers to reflect new relationships (if applicable, using `add-dependency` or potentially `analyze-project` if many changes occurred)
+    - Archive or annotate completed task documentation
 5. Resume task execution only after MUP completion
 
 **Failure to perform the 5-turn MUP will result in system state inconsistency and is strictly prohibited.**
 
 ## XIV. Conclusion
 
-The recots framework manages complex tasks via recursive decomposition and persistent state across distinct phases: Set-up/Maintenance, Strategy, Execution, and Cleanup/Consolidation. Adhere to this core prompt and the phase-specific plugin instructions loaded from `cline_docs/prompts/` for effective task management. Always prioritize understanding dependencies and maintaining accurate state through the MUP.
+The ReCoTs framework manages complex tasks via recursive decomposition and persistent state across distinct phases: Set-up/Maintenance, Strategy, Execution, and Cleanup/Consolidation. Adhere to this core prompt and the phase-specific plugin instructions loaded from `cline_docs/prompts/` for effective task management. Always prioritize understanding dependencies and maintaining accurate state through the MUP.
 
 **Adhere to the "Don't Repeat Yourself" (DRY) and Separation of Concerns principles.**

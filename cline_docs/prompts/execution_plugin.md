@@ -1,6 +1,6 @@
-# **Recursive Chain-of-Thought System (recots) - Execution Plugin**
+# **Recursive Chain-of-Thought System (ReCoTs) - Execution Plugin**
 
-**This Plugin provides detailed instructions and procedures for the Execution phase of the recots system. It should be used in conjunction with the Core System Prompt.**
+**This Plugin provides detailed instructions and procedures for the Execution phase of the ReCoTs system. It should be used in conjunction with the Core System Prompt.**
 
 ---
 

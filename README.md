@@ -1,10 +1,10 @@
 # ReCoTs
 
-Recursive Chain-of-Thought System (recots)
+Recursive Chain-of-Thought System (ReCoTs)
 
-Welcome to the **Recursive Chain-of-Thought System (recots)**, a framework designed to manage context, dependencies, and tasks in large-scale Cline projects within VS Code. Built for the Cline extension, recots leverages a recursive, file-based approach with a modular dependency tracking system to maintain project state and efficiency as complexity increases.
+Welcome to the **Recursive Chain-of-Thought System (ReCoTs)**, a framework designed to manage context, dependencies, and tasks in large-scale Cline projects within VS Code. Built for the Cline extension, ReCoTs leverages a recursive, file-based approach with a modular dependency tracking system to maintain project state and efficiency as complexity increases.
 
-Version **v7.5** represents a significant restructuring of the recots system, bringing it into alignment with its original design goals.  With the core architecture now established, future v7.x releases will focus on performance optimizations, enhancements, and refining the existing codebase.
+Version **v7.5** represents a significant restructuring of the ReCoTs system, bringing it into alignment with its original design goals.  With the core architecture now established, future v7.x releases will focus on performance optimizations, enhancements, and refining the existing codebase.
 
 - Version **v7.7** significantly restructures the core prompt and plugins, as well as introduces a new phase and plugin prompt, cleanup_consolidation_plugin.md.
    - cleanup_consolidation is responsible for consolidating project information into the appropriate files and either archiving or deleting old tasks.
@@ -74,8 +74,8 @@ Introduced the `visualize-dependencies` command (experimental) for generating Me
 1. **Clone the Repo**:
 
    ```sh
-   git clone https://github.com/RPG-fan/recots.git
-   cd recots
+   git clone https://github.com/RPG-fan/ReCoTs.git
+   cd ReCoTs
    ```
 
 2. **Install Dependencies**:
@@ -99,7 +99,7 @@ Introduced the `visualize-dependencies` command (experimental) for generating Me
 ## Project Structure
 
 ```tree
-recots/
+ReCoTs/
 │   .clinerules
 │   .gitignore
 │   INSTRUCTIONS.md
@@ -140,9 +140,9 @@ recots/
 
 ## Current Status & Future Plans
 
-- **v7.5**:  This release marks a significant restructuring of the recots system, bringing it into alignment with its original design goals. **Key architectural changes include the introduction of Contextual Keys (`KeyInfo`) and Hierarchical Dependency Aggregation, enhancing the precision and scalability of dependency tracking.** Key features also include the new `show-dependencies` command for simplified dependency inspection, configurable embedding device, and file exclusion patterns.
+- **v7.5**:  This release marks a significant restructuring of the ReCoTs system, bringing it into alignment with its original design goals. **Key architectural changes include the introduction of Contextual Keys (`KeyInfo`) and Hierarchical Dependency Aggregation, enhancing the precision and scalability of dependency tracking.** Key features also include the new `show-dependencies` command for simplified dependency inspection, configurable embedding device, and file exclusion patterns.
 - **Efficiency**: Achieves a ~1.9 efficiency ratio (90% fewer characters) for dependency tracking compared to full names, with efficiency improving at larger scales.
-- **Savings for Smaller Projects & Dependency Storage**: Version 7.5 enhances dependency storage and extends efficiency benefits to smaller projects, increasing recots versatility.
+- **Savings for Smaller Projects & Dependency Storage**: Version 7.5 enhances dependency storage and extends efficiency benefits to smaller projects, increasing ReCoTs versatility.
 - **Automated Design**: System operations are largely automated, condensing most procedures into single commands such as `analyze-project`, which streamlines workflows.
 - **Future Focus**: With the core architecture of v7.5 established, future development will concentrate on performance optimizations, enhancements, and the refinement of existing functionalities within the v7.x series. **Specifically, future v7.x releases will focus on performance optimizations, enhancements to the new `show-dependencies` command, and refining the existing codebase.**
 

@@ -1,6 +1,6 @@
-# **Recursive Chain-of-Thought System (recots) - Set-up/Maintenance Plugin**
+# **Recursive Chain-of-Thought System (ReCoTs) - Set-up/Maintenance Plugin**
 
-**This Plugin provides detailed instructions and procedures for the Set-up/Maintenance phase of the recots system. It should be used in conjunction with the Core System Prompt.**
+**This Plugin provides detailed instructions and procedures for the Set-up/Maintenance phase of the ReCoTs system. It should be used in conjunction with the Core System Prompt.**
 
 ## I. Entering and Exiting Set-up/Maintenance Phase
 

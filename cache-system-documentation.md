@@ -2,7 +2,7 @@
 
 ## Overview
 
-The recots cache system is designed to boost performance by storing the results of potentially costly function calls (like file analysis or embedding lookups) and reusing them when the same inputs occur again. It's a dynamic system based on Time-To-Live (TTL) expiration and automatic cleanup.
+The ReCoTs cache system is designed to boost performance by storing the results of potentially costly function calls (like file analysis or embedding lookups) and reusing them when the same inputs occur again. It's a dynamic system based on Time-To-Live (TTL) expiration and automatic cleanup.
 
 ### Core Components
 
@@ -19,7 +19,7 @@ The recots cache system is designed to boost performance by storing the results 
 - **Optional Persistence**: The system includes code to save/load caches to disk, although this feature is **disabled by default** in the current version.
 - **Isolation**: Each cache (identified by its unique `cache_name`) operates independently. Clearing one cache does not affect others.
 
-For most interactions with the recots system via the LLM, the cache operates transparently in the background. This guide provides details for users interested in understanding the mechanism or potentially leveraging it in custom scripts.
+For most interactions with the ReCoTs system via the LLM, the cache operates transparently in the background. This guide provides details for users interested in understanding the mechanism or potentially leveraging it in custom scripts.
 
 ---
 

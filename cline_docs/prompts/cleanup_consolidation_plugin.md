@@ -1,6 +1,6 @@
-# **Recursive Chain-of-Thought System (recots) - Cleanup/Consolidation Plugin**
+# **Recursive Chain-of-Thought System (ReCoTs) - Cleanup/Consolidation Plugin**
 
-**This Plugin provides detailed instructions and procedures for the Cleanup/Consolidation phase of the recots system. It should be used in conjunction with the Core System Prompt.**
+**This Plugin provides detailed instructions and procedures for the Cleanup/Consolidation phase of the ReCoTs system. It should be used in conjunction with the Core System Prompt.**
 
 ---
 
@@ -87,7 +87,7 @@
             2. **Determine Component**: For each entry, determine its primary component/module based on the `Files Modified` paths. Use heuristics:
                 - If most/all files are in `src/module_name/`, component is `Module: module_name`.
                 - If most/all files are in `docs/category/`, component is `Documentation: category`.
-                - If files are in `cline_utils/` or `cline_docs/`, component is `recots System`.
+                - If files are in `cline_utils/` or `cline_docs/`, component is `ReCoTs System`.
                 - If files span multiple major areas, choose the most representative one or create a `Cross-Cutting` category.
                 - Use a default `General` category if no clear component is identifiable.
             3. **Group Entries**: Create internal lists, grouping the parsed entries by their determined component.
@@ -100,7 +100,7 @@
                     - Use `---` between individual entries within the component group.
                 - *(Optional: Add a more distinct separator like `***` between different component groups if helpful for readability)*.
         - **Action: Write**: Use `write_to_file` to overwrite `changelog.md` with the *complete, reformatted content* generated in the previous step.
-        - **State**: "Reorganized `changelog.md`. Read existing content, parsed entries, grouped by component (e.g., Game Loop, Documentation, recots System), sorted entries by date within each group, and overwrote the file with the new structure."
+        - **State**: "Reorganized `changelog.md`. Read existing content, parsed entries, grouped by component (e.g., Game Loop, Documentation, ReCoTs System), sorted entries by date within each group, and overwrote the file with the new structure."
 
     - **c. `activeContext.md` (Final Pass)**:
         - **Action**: After consolidating information elsewhere and reorganizing the changelog, update `activeContext.md` one last time.
